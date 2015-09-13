@@ -33,12 +33,10 @@ public struct PlatformInput {
 // Used to add enemies into a level.
 public struct EnemyInput {
 	public int enemyIndex;
-	public int pathNumber;
-	public float pathProgress;
+	public PathInput[] path;
 
-	public EnemyInput (int enemyIndex, int pathNumber, float pathProgress) {
+	public EnemyInput (int enemyIndex, PathInput[] path) {
 		this.enemyIndex = enemyIndex;
-		this.pathNumber = pathNumber;
-		this.pathProgress = pathProgress;
+		this.path = path;
 	}
 }

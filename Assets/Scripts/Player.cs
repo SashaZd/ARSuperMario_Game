@@ -24,10 +24,10 @@ public class Player : MonoBehaviour {
 	void Update () {
 		if (goalTick == 0) {
 			// Get player input.
-			bool forward = Input.GetKey ("right") || Input.GetKey ("d");
-			bool backward = Input.GetKey ("left") || Input.GetKey ("a");
-			bool jump = Input.GetKey ("space") || Input.GetKey ("up") || Input.GetKey ("w");
-			bool reset = Input.GetKey ("r");
+			bool forward = Input.GetKey (KeyCode.RightArrow) || Input.GetKey (KeyCode.D);
+			bool backward = Input.GetKey (KeyCode.LeftArrow) || Input.GetKey (KeyCode.A);
+			bool jump = Input.GetKey (KeyCode.Space) || Input.GetKey (KeyCode.UpArrow) || Input.GetKey (KeyCode.W);
+			bool reset = Input.GetKey (KeyCode.R);
 
 			if (forward ^ backward) {
 				pathMovement.MoveAlongPath (forward);
@@ -37,7 +37,7 @@ public class Player : MonoBehaviour {
 				pathMovement.jump ();
 			}
 
-			if (reset) {
+			if (reset || PathUtil.OnFloor (gameObject)) {
 				LevelManager.GetInstance ().ResetLevel ();
 			}
 		} else {
@@ -50,6 +50,12 @@ public class Player : MonoBehaviour {
 				goalTick++;
 			}
 		}
+	}
+
+	// Causes the player to bounce after stomping on an enemy.
+	public void stompEnemy () {
+		Vector3 setVelocity = new Vector3 (body.velocity.x, pathMovement.jumpSpeed, body.velocity.z);
+		body.velocity = setVelocity;
 	}
 
 	// Triggers events when colliding with certain objects.

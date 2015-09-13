@@ -47,15 +47,17 @@ public class PathComponent : MonoBehaviour {
 				               transform.position.y + offset.y,
 							   transform.position.z + offset.z);
 
-				length = PathUtil.removeY (end - start);
+				length = PathUtil.RemoveY (end - start);
 				direction = Vector3.Normalize (length);
 			} else {
-				length = PathUtil.removeY (end - start);
+				length = PathUtil.RemoveY (end - start);
 				direction = Vector3.Normalize (length);
 				magnitude = Vector3.Magnitude (length);
 			}
 		}
-		DrawLine ();
+		if (lineMaterial != null) {
+			DrawLine ();
+		}
 	}
 
 	// Gets the magnitude of the path's length.

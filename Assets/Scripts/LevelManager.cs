@@ -26,6 +26,8 @@ public class LevelManager : MonoBehaviour {
 	public PathComponent[] fullPath;
 	// All enemies in the level;
 	public BasicEnemy[] enemies;
+	// The paths of each enemy.
+	public PathComponent[][] enemyPaths;
 
 	// Resets the positions of all entities in the level.
 	public void ResetLevel () {

@@ -26,7 +26,9 @@ public class LevelCreator : MonoBehaviour {
 			new PathInput (0.939739f, 0.0548638f, -0.74989f),
 			new PathInput (0.9347399f, 0.5741258f, 0.7979478f)};
 		PlatformInput[] platformInput = {new PlatformInput (0.6260657f, 0.964f, 0.055f, 1.1260657f, 1.064f, 0.555f)};
-		EnemyInput[] enemyInput = {new EnemyInput (0, 1, 0.5f)};
+		PathInput[] enemyPath = {new PathInput (1.329739f, 0.055f, -0.259504f), 
+			new PathInput (1.334739f, 0.0548638f, -0.75489f)};
+		EnemyInput[] enemyInput = {new EnemyInput (0, enemyPath)};
 		CreateLevel (pathInput, platformInput, enemyInput);
 	}
 
@@ -38,31 +40,24 @@ public class LevelCreator : MonoBehaviour {
 		// Construct the path from the input vectors.
 		for (int i = 0; i < fullPath.Length; i++) {
 			// Make and position the path component.
-			Vector3 start = PathUtil.MakeVectorFromPathInput(pathInput[i]);
-			Vector3 end = PathUtil.MakeVectorFromPathInput(pathInput[i + 1]);
-			Vector3 center = (start + end) / 2;
-			PathComponent path = Instantiate (pathPrefab, center, Quaternion.LookRotation (end - start, Vector3.up)) as PathComponent;
-			fullPath[i] = path;
-			path.transform.parent = levelManager.transform;
-			path.start = start;
-			path.end = end;
-			path.transform.Rotate (new Vector3 (0, -90, 0));
-			Vector3 tempScale = path.transform.localScale;
-			tempScale.x *= Vector3.Magnitude (end - start);
-			path.transform.localScale = tempScale;
-			path.lineMaterial = lineMaterial;
+			PathComponent pathComponent = CreatePath (pathInput[i], pathInput[i + 1]);
+			fullPath[i] = pathComponent;
+			pathComponent.lineMaterial = lineMaterial;
 
 			// Link paths together.
 			if (i > 0) {
-				path.previousPath = fullPath[i - 1];
-				fullPath[i - 1].nextPath = path;
+				pathComponent.previousPath = fullPath[i - 1];
+				fullPath[i - 1].nextPath = pathComponent;
 			}
 		}
 
-		// Create the player.
+		// Set the player on a path.
 		Player player = Instantiate (playerPrefab) as Player;
 		player.GetComponent<PathMovement> ().currentPath = fullPath[0];
 		player.GetComponent<PathMovement> ().startPath = fullPath[0];
+		foreach (PathComponent pathComponent in fullPath) {
+			pathComponent.transform.parent = player.transform;
+		}
 		levelManager.player = player;
 
 		// Create the goal at the end of the path.
@@ -84,14 +79,26 @@ public class LevelCreator : MonoBehaviour {
 
 		// Create enemies from the input.
 		BasicEnemy[] enemies = new BasicEnemy[enemyInput.Length];
+		levelManager.enemyPaths = new PathComponent[enemyInput.Length][];
 		for (int i = 0; i < enemyInput.Length; i++) {
 			if (enemyInput[i].enemyIndex < possibleEnemies.Length) {
 				BasicEnemy enemy = Instantiate (possibleEnemies[enemyInput[i].enemyIndex]) as BasicEnemy;
 				enemies[i] = enemy;
 				enemy.transform.parent = levelManager.transform;
-				enemy.GetComponent<PathMovement> ().currentPath = fullPath[enemyInput[i].pathNumber];
-				enemy.GetComponent<PathMovement> ().startPath = fullPath[enemyInput[i].pathNumber];
-				enemy.GetComponent<PathMovement> ().pathProgress = enemyInput[i].pathProgress;
+				int pathLength = enemyInput[i].path.Length - 1;
+				PathComponent[] enemyPath = new PathComponent[pathLength];
+				for (int j = 0; j < pathLength; j++) {
+					PathComponent pathComponent = CreatePath (enemyInput[i].path[j], enemyInput[i].path[j + 1]);
+					enemyPath[j] = pathComponent;
+					if (j > 0) {
+						pathComponent.previousPath = enemyPath[j - 1];
+						enemyPath[j - 1].nextPath = pathComponent;
+					}
+					pathComponent.transform.parent = enemy.transform;
+				}
+				levelManager.enemyPaths[i] = enemyPath;
+				enemy.GetComponent<PathMovement> ().currentPath = enemyPath[0];
+				enemy.GetComponent<PathMovement> ().startPath = enemyPath[0];
 			}
 		}
 
@@ -99,5 +106,20 @@ public class LevelCreator : MonoBehaviour {
 		levelManager.fullPath = fullPath;
 		levelManager.enemies = enemies;
 		Destroy (gameObject);
+	}
+
+	// Creates a path component from a start and end point.
+	PathComponent CreatePath (PathInput startInput, PathInput endInput) {
+		Vector3 start = PathUtil.MakeVectorFromPathInput(startInput);
+		Vector3 end = PathUtil.MakeVectorFromPathInput(endInput);
+		Vector3 center = (start + end) / 2;
+		PathComponent path = Instantiate (pathPrefab, center, Quaternion.LookRotation (end - start, Vector3.up)) as PathComponent;
+		path.start = start;
+		path.end = end;
+		path.transform.Rotate (new Vector3 (0, -90, 0));
+		Vector3 tempScale = path.transform.localScale;
+		tempScale.x *= Vector3.Magnitude (end - start);
+		path.transform.localScale = tempScale;
+		return path;
 	}
 }
