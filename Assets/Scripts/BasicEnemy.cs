@@ -35,7 +35,7 @@ public class BasicEnemy : MonoBehaviour {
 	void OnCollisionEnter (Collision collision) {
 		if (collision.collider.tag == "Player") {
 			// Check if the player is high enough to "Goomba stomp" the enemy.
-			if (collision.collider.transform.position.y - collision.collider.bounds.extents.y - transform.position.y > GetComponent<Collider> ().bounds.extents.y * 0.9f) {
+			if (collision.collider.transform.position.y - collision.collider.bounds.extents.y / 2 > transform.position.y + GetComponent<Collider> ().bounds.extents.y * 0.45f) {
 				collision.gameObject.GetComponent<Player> ().stompEnemy ();
 				KillEntity ();
 			} else {
