@@ -50,6 +50,9 @@ public class PathMovement : MonoBehaviour {
 	public void ResetPosition () {
 		currentPath = startPath;
 		pathProgress = 0;
+		if (body == null) {
+			body = GetComponent<Rigidbody> ();
+		}
 		body.velocity = Vector3.zero;
 
 		// Determine the starting position and save it in case the player resets.

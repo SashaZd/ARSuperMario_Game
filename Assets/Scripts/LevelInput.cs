@@ -40,3 +40,16 @@ public struct EnemyInput {
 		this.path = path;
 	}
 }
+
+// Used to add coins into a level.
+public struct CoinInput {
+	public float x;
+	public float y;
+	public float z;
+
+	public CoinInput (float x, float y, float z) {
+		this.x = x;
+		this.y = y;
+		this.z = z;
+	}
+}

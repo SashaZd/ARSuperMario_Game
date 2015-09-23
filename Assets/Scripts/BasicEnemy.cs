@@ -25,7 +25,7 @@ public class BasicEnemy : MonoBehaviour {
 	}
 
 	// Resets the position and direction of the enemy.
-	public void ResetPosition () {
+	public void Reset () {
 		gameObject.SetActive (true);
 		forward = true;
 		pathMovement.ResetPosition ();
@@ -35,16 +35,19 @@ public class BasicEnemy : MonoBehaviour {
 	void OnCollisionEnter (Collision collision) {
 		if (collision.collider.tag == "Player") {
 			// Check if the player is high enough to "Goomba stomp" the enemy.
-			if (collision.collider.transform.position.y - collision.collider.bounds.extents.y / 2 > transform.position.y + GetComponent<Collider> ().bounds.extents.y * 0.45f) {
-				collision.gameObject.GetComponent<Player> ().stompEnemy ();
+			float playerStompHeight = collision.collider.transform.position.y - collision.collider.bounds.extents.y / 2;
+			float enemyHeadHeight = transform.position.y + GetComponent<Collider> ().bounds.extents.y * 0.45f;
+			if (playerStompHeight > enemyHeadHeight) {
+				collision.gameObject.GetComponent<Player> ().StompEnemy ();
 				KillEntity ();
 			} else {
 				// If not, the player dies and the level is reset.
-				LevelManager.GetInstance ().ResetLevel ();
+				collision.gameObject.GetComponent<Player> ().HitEnemy ();
 			}
 		}
 	}
 
+	// Kills the enemy.
 	void KillEntity () {
 		gameObject.SetActive (false);
 	}

@@ -26,14 +26,19 @@ public class LevelManager : MonoBehaviour {
 	public PathComponent[] fullPath;
 	// All enemies in the level;
 	public BasicEnemy[] enemies;
+	// All coins in the level;
+	public Coin[] coins;
 	// The paths of each enemy.
 	public PathComponent[][] enemyPaths;
 
 	// Resets the positions of all entities in the level.
 	public void ResetLevel () {
-		player.GetComponent<PathMovement> ().ResetPosition ();
+		player.Reset ();
 		foreach (BasicEnemy enemy in enemies) {
-			enemy.ResetPosition ();
+			enemy.Reset ();
+		}
+		foreach (Coin coin in coins) {
+			coin.Reset ();
 		}
 	}
 }

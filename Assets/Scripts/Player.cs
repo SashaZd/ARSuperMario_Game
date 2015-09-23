@@ -14,6 +14,9 @@ public class Player : MonoBehaviour {
 	// The number of ticks to wait before resetting the level after winning.
 	const int MAXGOALTICKS = 60;
 
+	// The current score of the player.
+	public int score = 0;
+
 	// Use this for initialization.
 	void Start () {
 		pathMovement = GetComponent<PathMovement> ();
@@ -53,22 +56,40 @@ public class Player : MonoBehaviour {
 	}
 
 	// Causes the player to bounce after stomping on an enemy.
-	public void stompEnemy () {
+	// Also increases the player's score.
+	public void StompEnemy () {
 		Vector3 setVelocity = new Vector3 (body.velocity.x, pathMovement.jumpSpeed, body.velocity.z);
 		body.velocity = setVelocity;
+		score += 100;
 	}
 
 	// Triggers events when colliding with certain objects.
 	void OnCollisionEnter (Collision collision) {
 		if (collision.collider.tag == "Finish") {
-			OnGoalHit ();
+			HitGoal ();
 		}
 	}
 
 	// Plays an animation upon reaching the goal.
-	public void OnGoalHit () {
+	public void HitGoal () {
 		body.useGravity = false;
 		body.velocity = Vector3.up * pathMovement.jumpSpeed;
 		goalTick = 1;
+	}
+
+	// Kills the player upon hitting an enemy.
+	public void HitEnemy () {
+		LevelManager.GetInstance ().ResetLevel ();
+	}
+
+	// Increases the player's score after collecting a coin.
+	public void CollectCoin () {
+		score += 100;
+	}
+
+	// Resets the position of the player.
+	public void Reset () {
+		pathMovement.ResetPosition ();
+		score = 0;
 	}
 }

@@ -10,6 +10,8 @@ public class LevelCreator : MonoBehaviour {
 	public GameObject goalPrefab;
 	// Virtual platform resource to be instantiated from.
 	public GameObject virtualPlatformPrefab;
+	// Coin resource to be instantiated from.
+	public Coin coinPrefab;
 	// The material to draw path lines with.
 	public Material lineMaterial;
 
@@ -29,11 +31,14 @@ public class LevelCreator : MonoBehaviour {
 		PathInput[] enemyPath = {new PathInput (1.329739f, 0.055f, -0.259504f), 
 			new PathInput (1.334739f, 0.0548638f, -0.75489f)};
 		EnemyInput[] enemyInput = {new EnemyInput (0, enemyPath)};
-		CreateLevel (pathInput, platformInput, enemyInput);
+		CoinInput[] coinInput = {new CoinInput (2.849f, 0.866f, -0.291687f),
+			new CoinInput (2.706f, 0.943f, -0.291687f),
+			new CoinInput (2.563f, 0.866f, -0.291687f)};
+		CreateLevel (pathInput, platformInput, enemyInput, coinInput);
 	}
 
 	// Creates a level from the given input.
-	public void CreateLevel (PathInput[] pathInput, PlatformInput[] platformInput, EnemyInput[] enemyInput) {
+	public void CreateLevel (PathInput[] pathInput, PlatformInput[] platformInput, EnemyInput[] enemyInput, CoinInput[] coinInput) {
 		LevelManager levelManager = LevelManager.GetInstance ();
 		PathComponent[] fullPath = new PathComponent[pathInput.Length - 1];
 
@@ -63,14 +68,14 @@ public class LevelCreator : MonoBehaviour {
 		// Create the goal at the end of the path.
 		GameObject goal = Instantiate (goalPrefab);
 		goal.name = "Goal";
-		goal.transform.parent = levelManager.transform;
+		goal.transform.parent = levelManager.transform.FindChild ("Platforms").transform;
 		goal.transform.position = fullPath[fullPath.Length - 1].end + Vector3.up * 0.05f;
 		
 		// Create virtual platforms from the input.
 		foreach (PlatformInput input in platformInput) {
 			GameObject virtualPlatform = Instantiate (virtualPlatformPrefab);
 			virtualPlatform.name = "VirtualPlatform";
-			virtualPlatform.transform.parent = levelManager.transform;
+			virtualPlatform.transform.parent = levelManager.transform.FindChild ("Platforms").transform;
 			Vector3 startCorner = new Vector3 (input.startX, input.startY, input.startZ);
 			Vector3 endCorner = new Vector3 (input.endX, input.endY, input.endZ);
 			virtualPlatform.transform.position = (startCorner + endCorner) / 2;
@@ -84,7 +89,7 @@ public class LevelCreator : MonoBehaviour {
 			if (enemyInput[i].enemyIndex < possibleEnemies.Length) {
 				BasicEnemy enemy = Instantiate (possibleEnemies[enemyInput[i].enemyIndex]) as BasicEnemy;
 				enemies[i] = enemy;
-				enemy.transform.parent = levelManager.transform;
+				enemy.transform.parent = levelManager.transform.FindChild ("Enemies").transform;
 				int pathLength = enemyInput[i].path.Length - 1;
 				PathComponent[] enemyPath = new PathComponent[pathLength];
 				for (int j = 0; j < pathLength; j++) {
@@ -102,10 +107,19 @@ public class LevelCreator : MonoBehaviour {
 			}
 		}
 
+		Coin[] coins = new Coin[coinInput.Length];
+		// Create coins from the input.
+		for (int i = 0; i < coinInput.Length; i++) {
+			Coin coin = Instantiate (coinPrefab) as Coin;
+			coin.transform.parent = levelManager.transform.FindChild ("Items").transform;
+			coin.transform.position = new Vector3 (coinInput[i].x, coinInput[i].y, coinInput[i].z);
+			coins[i] = coin;
+		}
+
 		// Pass the needed data to the level manager to store.
 		levelManager.fullPath = fullPath;
 		levelManager.enemies = enemies;
-		Destroy (gameObject);
+		levelManager.coins = coins;
 	}
 
 	// Creates a path component from a start and end point.
