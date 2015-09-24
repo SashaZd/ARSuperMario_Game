@@ -16,6 +16,8 @@ public class Player : MonoBehaviour {
 
 	// The current score of the player.
 	public int score = 0;
+	// The size (power-up status) of the player.
+	public int size = 1;
 
 	// Use this for initialization.
 	void Start () {
@@ -77,9 +79,29 @@ public class Player : MonoBehaviour {
 		goalTick = 1;
 	}
 
-	// Kills the player upon hitting an enemy.
-	public void HitEnemy () {
-		LevelManager.GetInstance ().ResetLevel ();
+	// Sets the size of the player.
+	public void SetSize (int newSize) {
+		float ratio = (float)newSize / (float)size;
+		PathUtil.ScaleY (transform, ratio);
+		PathUtil.SetY (transform, transform.position.y + GetComponent<Collider> ().bounds.extents.y * Mathf.Log (ratio, 2) * 2.01f);
+		size = newSize;
+		pathMovement.UpdateGroundOffset ();
+	}
+
+	// Reduces the player's size. Kills the player if the size is at a minimum.
+	public void TakeDamage () {
+		if (size > 1) {
+			SetSize (1);
+		} else {
+			LevelManager.GetInstance ().ResetLevel ();
+		}
+	}
+
+	// Increases the player's size.
+	public void HitMushroom () {
+		if (size == 1) {
+			SetSize (2);
+		}
 	}
 
 	// Increases the player's score after collecting a coin.
@@ -91,5 +113,6 @@ public class Player : MonoBehaviour {
 	public void Reset () {
 		pathMovement.ResetPosition ();
 		score = 0;
+		SetSize (1);
 	}
 }

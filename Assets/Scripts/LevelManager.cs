@@ -24,21 +24,28 @@ public class LevelManager : MonoBehaviour {
 	public Player player;
 	// All segments in the ribbon path.
 	public PathComponent[] fullPath;
-	// All enemies in the level;
-	public BasicEnemy[] enemies;
-	// All coins in the level;
+	
+	// All enemies in the level.
+	public Enemy[] enemies;
+	// All coins in the level.
 	public Coin[] coins;
-	// The paths of each enemy.
-	public PathComponent[][] enemyPaths;
+	// All blocks in the level.
+	public Block[] blocks;
 
 	// Resets the positions of all entities in the level.
 	public void ResetLevel () {
 		player.Reset ();
-		foreach (BasicEnemy enemy in enemies) {
+		foreach (Enemy enemy in enemies) {
 			enemy.Reset ();
 		}
 		foreach (Coin coin in coins) {
 			coin.Reset ();
+		}
+		foreach (Block block in blocks) {
+			block.Reset ();
+		}
+		foreach (Transform item in transform.FindChild ("Items").transform) {
+			item.gameObject.GetComponent<Item> ().Reset ();
 		}
 	}
 }

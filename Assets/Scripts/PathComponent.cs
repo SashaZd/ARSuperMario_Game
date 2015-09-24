@@ -5,9 +5,9 @@ using System;
 public class PathComponent : MonoBehaviour {
 
 	// The position of the start of the path.
-	public Vector3 start;
+	Vector3 start;
 	// The position of the end of the path.
-	public Vector3 end;
+	Vector3 end;
 
 	// The vector length of the path.
 	Vector3 length;
@@ -32,7 +32,7 @@ public class PathComponent : MonoBehaviour {
 	void Start () {
 		if (magnitude == 0) {
 			if (start == end) {
-				// If start and end points aren't already set, find them.
+				// If start and end points aren't already set, find them from the center point and rotation.
 				magnitude = (float)Math.Pow((double)(transform.localScale.x * transform.localScale.x + transform.localScale.z * transform.localScale.z), 0.5);
 
 				float radius = magnitude / 2;
@@ -50,14 +50,46 @@ public class PathComponent : MonoBehaviour {
 				length = PathUtil.RemoveY (end - start);
 				direction = Vector3.Normalize (length);
 			} else {
-				length = PathUtil.RemoveY (end - start);
-				direction = Vector3.Normalize (length);
-				magnitude = Vector3.Magnitude (length);
+				CalculateDimensions ();
 			}
 		}
 		if (lineMaterial != null) {
 			DrawLine ();
 		}
+	}
+
+	// Gets the start point of the path.
+	public Vector3 GetStart () {
+		return start;
+	}
+
+	// Sets the start point of the path.
+	public void SetStart (Vector3 newStart) {
+		start = newStart;
+		CalculateDimensions ();
+	}
+
+	// Gets the end point of the path.
+	public Vector3 GetEnd () {
+		return end;
+	}
+
+	// Sets the end point of the path.
+	public void SetEnd (Vector3 newEnd) {
+		end = newEnd;
+		CalculateDimensions ();
+	}
+
+	// Sets both endpoints of the path.
+	public void SetPath (Vector3 newStart, Vector3 newEnd) {
+		start = newStart;
+		end = newEnd;
+		CalculateDimensions ();
+	}
+
+	// Gets the vector length of the path.
+	public Vector3 GetLength () {
+		return length;
 	}
 
 	// Gets the magnitude of the path's length.
@@ -137,4 +169,11 @@ public class PathComponent : MonoBehaviour {
 			line.SetPosition(1, lineEnd);
 		}
 	}
+
+	void CalculateDimensions () {
+		length = PathUtil.RemoveY (end - start);
+		direction = Vector3.Normalize (length);
+		magnitude = Vector3.Magnitude (length);
+	}
+
 }

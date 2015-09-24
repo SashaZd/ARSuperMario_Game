@@ -35,7 +35,7 @@ public class PathMovement : MonoBehaviour {
 		if (startPath != null) {
 			ResetPosition ();
 		}
-		groundOffset = GetComponent<Collider> ().bounds.extents.y;
+		UpdateGroundOffset ();
 		sideOffset = GetComponent<Collider> ().bounds.extents.x;
 	}
 
@@ -44,6 +44,11 @@ public class PathMovement : MonoBehaviour {
 		if (!initiated && startPath != null) {
 			ResetPosition ();
 		}
+	}
+
+	// Finds the offset from the entity's center to the bottom of the entity.
+	public void UpdateGroundOffset () {
+		groundOffset = GetComponent<Collider> ().bounds.extents.y;
 	}
 
 	// Resets the position of the object to its initial position.
