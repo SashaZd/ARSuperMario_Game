@@ -10,8 +10,8 @@ public class LevelCreator : MonoBehaviour {
 	public PathComponent pathPrefab;
 	// Goal resource to be instantiated from.
 	public GameObject goalPrefab;
-	// Virtual platform resource to be instantiated from.
-	public GameObject virtualPlatformPrefab;
+	// Texture for virtual platforms.
+	public Material virtualPlatformMaterial;
 	// Block resources to be instantiated from.
 	public Block[] blockPrefabs;
 
@@ -33,6 +33,9 @@ public class LevelCreator : MonoBehaviour {
 	// Hard-coded JSON asset for now.
 	public TextAsset json;
 
+	// The height of virtual platforms.
+	const float PLATFORMHEIGHT = 0.1f;
+
 	// Use this for initialization.
 	IEnumerator Start () {
 		WWW www = new WWW (url);
@@ -41,7 +44,7 @@ public class LevelCreator : MonoBehaviour {
 		// Test connecting to server for dummy JSON data.
 		// Requires the back-end Django server to be set up.
 		JSONObject input = new JSONObject (www.text);
-		print (input.GetField ("GET").str);
+		print (input.HasField("GET") ? input.GetField ("GET").str : "Cannot connect to server.");
 
 		//Hard-coded JSON resource for now.
 		input = new JSONObject (json.text);
@@ -64,22 +67,15 @@ public class LevelCreator : MonoBehaviour {
 		// Parse enemies from JSON.
 		JSONObject enemyJSON = input.GetField ("enemies");
 		List<EnemyInput> enemyInput = new List<EnemyInput> (enemyJSON.list.Count);
-		foreach (JSONObject e in enemyJSON.list) {
-			JSONObject enemy = e.GetField ("enemy");
-			JSONObject enemyPathJSON = enemy.GetField ("enemy_path");
-			List<PathInput> enemyPath = new List<PathInput> (enemyPathJSON.list.Count);
-			foreach (JSONObject pathComponent in enemyPathJSON.list) {
-				enemyPath.Add (new PathInput (pathComponent));
-			}
-			enemyInput.Add (new EnemyInput ((int)enemy.GetField ("enemy_type").n, enemyPath));
+		foreach (JSONObject enemy in enemyJSON.list) {
+			enemyInput.Add (new EnemyInput (enemy.GetField ("enemy")));
 		}
 
 		//Parse coins from JSON.
 		JSONObject coinJSON = input.GetField ("coins");
 		List<CoinInput> coinInput = new List<CoinInput> (coinJSON.list.Count);
-		foreach (JSONObject c in coinJSON.list) {
-			JSONObject coin = c.GetField ("position");
-			coinInput.Add (new CoinInput(coin));
+		foreach (JSONObject coin in coinJSON.list) {
+			coinInput.Add (new CoinInput(coin.GetField ("position")));
 		}
 
 		// Hard-coded block input until JSON is figured out here.
@@ -124,12 +120,8 @@ public class LevelCreator : MonoBehaviour {
 		
 		// Create virtual platforms from the input.
 		foreach (PlatformInput input in platformInput) {
-			GameObject virtualPlatform = Instantiate (virtualPlatformPrefab);
+			GameObject virtualPlatform = CreatePlatform (input);
 			virtualPlatform.transform.parent = levelManager.transform.FindChild ("Platforms").transform;
-			Vector3 startCorner = new Vector3 (input.startX, input.startY, input.startZ);
-			Vector3 endCorner = new Vector3 (input.endX, input.endY, input.endZ);
-			virtualPlatform.transform.position = (startCorner + endCorner) / 2;
-			virtualPlatform.transform.localScale = endCorner - startCorner;
 		}
 
 		// Create enemies from the input.
@@ -160,7 +152,7 @@ public class LevelCreator : MonoBehaviour {
 		foreach (CoinInput input in coinInput) {
 			Coin coin = Instantiate (coinPrefab) as Coin;
 			coin.transform.parent = levelManager.transform.FindChild ("Coins").transform;
-			coin.transform.position = new Vector3 (input.x, input.y, input.z);
+			coin.transform.position = input.position;
 			coins.Add (coin);
 		}
 
@@ -172,7 +164,7 @@ public class LevelCreator : MonoBehaviour {
 				block.contents = itemPrefabs[input.contentIndex];
 			}
 			block.transform.parent = levelManager.transform.FindChild ("Blocks").transform;
-			block.transform.position = new Vector3 (input.x, input.y, input.z);
+			block.transform.position = input.position;
 			blocks.Add (block);
 		}
 
@@ -185,8 +177,8 @@ public class LevelCreator : MonoBehaviour {
 
 	// Creates a path component from a start and end point.
 	PathComponent CreatePath (PathInput startInput, PathInput endInput) {
-		Vector3 start = PathUtil.MakeVectorFromPathInput(startInput);
-		Vector3 end = PathUtil.MakeVectorFromPathInput(endInput);
+		Vector3 start = startInput.position;
+		Vector3 end = endInput.position;
 		Vector3 center = (start + end) / 2;
 		PathComponent path = Instantiate (pathPrefab, center, Quaternion.LookRotation (end - start, Vector3.up)) as PathComponent;
 		path.SetPath (start, end);
@@ -196,4 +188,70 @@ public class LevelCreator : MonoBehaviour {
 		path.transform.localScale = tempScale;
 		return path;
 	}
+
+	// Creates a virtual platform from its top vertices.
+	GameObject CreatePlatform (PlatformInput input) {
+		GameObject virtualPlatform = new GameObject ();
+		virtualPlatform.name = "Virtual Platform";
+		virtualPlatform.AddComponent<MeshFilter> ();
+		virtualPlatform.AddComponent<MeshRenderer> ();
+		virtualPlatform.GetComponent<Renderer> ().material = virtualPlatformMaterial;
+		Mesh mesh = virtualPlatform.GetComponent<MeshFilter>().mesh;
+
+		// Create the vertices of the platform.
+		Vector3[] vertices =  new Vector3[input.vertices.Count * 2];
+		for (int i = 0; i < input.vertices.Count; i++) {
+			vertices[i] = input.vertices[i];
+			vertices[i + input.vertices.Count] = PathUtil.SetY(input.vertices[i], input.vertices[0].y - PLATFORMHEIGHT);
+		}
+		mesh.vertices = vertices;
+
+		// Find the triangles that can make up the top and bottom faces of the platform mesh.
+		Triangulator triangulator = new Triangulator (input.vertices.ToArray ());
+		int[] topTriangles = triangulator.Triangulate ();
+		int[] triangles = new int[topTriangles.Length * 2 + input.vertices.Count * 6];
+		for (int i = 0; i < topTriangles.Length; i += 3) {
+			triangles[i] = topTriangles[i];
+			triangles[i + 1] = topTriangles[i + 1];
+			triangles[i + 2] = topTriangles[i + 2];
+			triangles[topTriangles.Length + i] = topTriangles[i + 2] + input.vertices.Count;
+			triangles[topTriangles.Length + i + 1] = topTriangles[i + 1] + input.vertices.Count;
+			triangles[topTriangles.Length + i + 2] = topTriangles[i] + input.vertices.Count;
+		}
+
+		// Find the triangles for the sides of the platform.
+		for (int i = 0; i < input.vertices.Count; i++) {
+			int offset = topTriangles.Length * 2 + i * 6;
+			if (i < input.vertices.Count - 1) {
+				triangles[offset] = i;
+				triangles[offset + 1] = i + 1;
+				triangles[offset + 2] = input.vertices.Count + i;
+				triangles[offset + 3] = input.vertices.Count + i + 1;
+				triangles[offset + 4] = input.vertices.Count + i;
+				triangles[offset + 5] = i + 1;
+			} else {
+				triangles[offset] = i;
+				triangles[offset + 1] = 0;
+				triangles[offset + 2] = input.vertices.Count + i;
+				triangles[offset + 3] = input.vertices.Count;
+				triangles[offset + 4] = input.vertices.Count + i;
+				triangles[offset + 5] = 0;
+			}
+		}
+
+		mesh.triangles = triangles;
+
+		virtualPlatform.AddComponent<MeshCollider> ();
+		virtualPlatform.GetComponent<MeshCollider> ().sharedMesh = mesh;
+		return virtualPlatform;
+	}
+
+	/*
+	// Debug method used to print a mesh's triangles.
+	public void PrintMesh (Mesh mesh) {
+		for (int i = 0; i < mesh.triangles.Length; i += 3) {
+			print (mesh.vertices[mesh.triangles[i]] + "" + mesh.vertices[mesh.triangles[i + 1]] + "" + mesh.vertices[mesh.triangles[i + 2]]);
+		}
+	}
+	*/
 }

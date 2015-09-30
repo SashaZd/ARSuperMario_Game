@@ -20,21 +20,21 @@ public class PathUtil {
 		Vector3 setPosition = new Vector3 (target.position.x, target.position.y, target.position.z);
 		target.position = setPosition;
 	}
-
-	// Sets the y component of a vector to 0.
-	public static Vector3 RemoveY (Vector3 vector) {
-		return new Vector3 (vector.x, 0, vector.z);
-	}
-
+	
 	// Scales the y component of the target's position.
 	public static void ScaleY (Transform target, float scale) {
 		Vector3 setScale = new Vector3 (target.localScale.x, target.localScale.y * scale, target.localScale.z);
 		target.localScale = setScale;
 	}
 
-	// Creates and returns a 3D vector from a PathInput struct.
-	public static Vector3 MakeVectorFromPathInput (PathInput input) {
-		return new Vector3 (input.x, input.y, input.z);
+	// Creates a new vector with a changed y component.
+	public static Vector3 SetY (Vector3 vector, float newY) {
+		return new Vector3 (vector.x, newY, vector.z);
+	}
+
+	// Creates a new vector with the y component set to 0.
+	public static Vector3 RemoveY (Vector3 vector) {
+		return SetY (vector, 0);
 	}
 
 	// Checks if an entity is touching the "floor is lava".
@@ -73,5 +73,10 @@ public class PathUtil {
 		}
 		pathMovement.currentPath = closestPath;
 		pathMovement.pathProgress = PathUtil.ProjectionPointLine (position, closestPath.GetStart (), closestPath.GetEnd ()).x / closestPath.GetLength ().x;
+	}
+
+	// Makes a vector from a size 3 JSON array.
+	public static Vector3 MakeVectorFromJSON (JSONObject json) {
+		return new Vector3 (json.list [0].n, json.list [1].n, json.list [2].n);
 	}
 }
