@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System.Collections.Generic;
 
 // Holds all entities in the level.
 public class LevelManager : MonoBehaviour {
@@ -23,14 +23,14 @@ public class LevelManager : MonoBehaviour {
 	// The object that the player controls.
 	public Player player;
 	// All segments in the ribbon path.
-	public PathComponent[] fullPath;
+	public List<PathComponent> fullPath;
 	
 	// All enemies in the level.
-	public Enemy[] enemies;
+	public List<Enemy> enemies;
 	// All coins in the level.
-	public Coin[] coins;
+	public List<Coin> coins;
 	// All blocks in the level.
-	public Block[] blocks;
+	public List<Block> blocks;
 
 	// Resets the positions of all entities in the level.
 	public void ResetLevel () {

@@ -9,9 +9,9 @@ public class Goomba : Enemy {
 	void OnCollisionEnter (Collision collision) {
 		if (collision.collider.tag == "Player") {
 			// Check if the player is high enough to "Goomba stomp" the enemy.
-			float playerStompHeight = collision.collider.transform.position.y - collision.collider.bounds.extents.y;
-			float enemyHeadHeight = transform.position.y + GetComponent<Collider> ().bounds.extents.y * 0.95f;
-			if (playerStompHeight > enemyHeadHeight) {
+			float playerStompHeight = collision.collider.transform.position.y - collision.collider.bounds.extents.y / 2;
+			float enemyHeadHeight = transform.position.y + GetComponent<Collider> ().bounds.extents.y * 0.45f;
+			if (playerStompHeight > enemyHeadHeight || collision.collider.transform.GetComponent<Rigidbody> ().velocity.y < -0.01f) {
 				collision.gameObject.GetComponent<Player> ().StompEnemy ();
 				KillEntity ();
 			} else {

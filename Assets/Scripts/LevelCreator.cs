@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
+using System.Net;
 
 // Creates a ribbon path from input.
 public class LevelCreator : MonoBehaviour {
@@ -26,35 +28,77 @@ public class LevelCreator : MonoBehaviour {
 	// The material to draw path lines with.
 	public Material lineMaterial;
 
+	// Where to get the JSON data from.
+	public string url = "http://127.0.0.1:8000/api/dummyJSON/";
+	// Hard-coded JSON asset for now.
+	public TextAsset json;
+
 	// Use this for initialization.
-	void Start () {
-		PathInput[] pathInput = {new PathInput (3.329739f, 0.055f, -0.259506f),
-			new PathInput (1.329739f, 0.055f, -0.259504f),
-			new PathInput (1.334739f, 0.0548638f, -0.75489f),
-			new PathInput (0.939739f, 0.0548638f, -0.74989f),
-			new PathInput (0.9347399f, 0.5741258f, 0.7979478f)};
-		PlatformInput[] platformInput = {new PlatformInput (0.6260657f, 0.964f, 0.055f, 1.1260657f, 1.064f, 0.555f)};
-		PathInput[] enemyPath = {new PathInput (1.329739f, 0.055f, -0.259504f), 
-			new PathInput (1.334739f, 0.0548638f, -0.75489f)};
-		EnemyInput[] enemyInput = {new EnemyInput (0, enemyPath)};
-		CoinInput[] coinInput = {new CoinInput (2.849f, 0.866f, -0.291687f),
-			new CoinInput (2.706f, 0.943f, -0.291687f),
-			new CoinInput (2.563f, 0.866f, -0.291687f)};
-		BlockInput[] blockInput = {new BlockInput (0, 0, 2.328f, 0.782f, -0.247f)};
+	IEnumerator Start () {
+		WWW www = new WWW (url);
+		yield return www;
+
+		// Test connecting to server for dummy JSON data.
+		// Requires the back-end Django server to be set up.
+		JSONObject input = new JSONObject (www.text);
+		print (input.GetField ("GET").str);
+
+		//Hard-coded JSON resource for now.
+		input = new JSONObject (json.text);
+
+		// Parse the path from JSON.
+		JSONObject pathJSON = input.GetField ("route");
+		List<PathInput> pathInput = new List<PathInput> (pathJSON.list.Count);
+		foreach (JSONObject pathComponent in pathJSON.list) {
+			pathInput.Add (new PathInput (pathComponent));
+		}
+
+		// Parse platforms from JSON.
+		JSONObject platformJSON = input.GetField ("virtual_platform");
+		List<PlatformInput> platformInput = new List<PlatformInput> (platformJSON.list.Count);
+		platformInput.Add (new PlatformInput (platformJSON));
+		/*foreach (JSONObject platform in platformJSON) {
+			platformInput.Add (new PlatformInput (platform));
+		}*/
+
+		// Parse enemies from JSON.
+		JSONObject enemyJSON = input.GetField ("enemies");
+		List<EnemyInput> enemyInput = new List<EnemyInput> (enemyJSON.list.Count);
+		foreach (JSONObject e in enemyJSON.list) {
+			JSONObject enemy = e.GetField ("enemy");
+			JSONObject enemyPathJSON = enemy.GetField ("enemy_path");
+			List<PathInput> enemyPath = new List<PathInput> (enemyPathJSON.list.Count);
+			foreach (JSONObject pathComponent in enemyPathJSON.list) {
+				enemyPath.Add (new PathInput (pathComponent));
+			}
+			enemyInput.Add (new EnemyInput ((int)enemy.GetField ("enemy_type").n, enemyPath));
+		}
+
+		//Parse coins from JSON.
+		JSONObject coinJSON = input.GetField ("coins");
+		List<CoinInput> coinInput = new List<CoinInput> (coinJSON.list.Count);
+		foreach (JSONObject c in coinJSON.list) {
+			JSONObject coin = c.GetField ("position");
+			coinInput.Add (new CoinInput(coin));
+		}
+
+		// Hard-coded block input until JSON is figured out here.
+		List<BlockInput> blockInput = new List<BlockInput> (1);
+		blockInput.Add (new BlockInput (0, 0, 2.328f, 0.782f, -0.247f));
 
 		CreateLevel (pathInput, platformInput, enemyInput, coinInput, blockInput);
 	}
 
 	// Creates a level from the given input.
-	public void CreateLevel (PathInput[] pathInput, PlatformInput[] platformInput, EnemyInput[] enemyInput, CoinInput[] coinInput, BlockInput[] blockInput) {
+	public void CreateLevel (List<PathInput> pathInput, List<PlatformInput> platformInput, List<EnemyInput> enemyInput, List<CoinInput> coinInput, List<BlockInput> blockInput) {
 		LevelManager levelManager = LevelManager.GetInstance ();
 		
 		// Construct the path from the input points.
-		PathComponent[] fullPath = new PathComponent[pathInput.Length - 1];
-		for (int i = 0; i < fullPath.Length; i++) {
+		List<PathComponent> fullPath = new List<PathComponent>(pathInput.Count - 1);
+		for (int i = 0; i < fullPath.Capacity; i++) {
 			// Make and position the path component.
 			PathComponent pathComponent = CreatePath (pathInput[i], pathInput[i + 1]);
-			fullPath[i] = pathComponent;
+			fullPath.Add (pathComponent);
 			pathComponent.lineMaterial = lineMaterial;
 
 			// Link paths together.
@@ -75,14 +119,12 @@ public class LevelCreator : MonoBehaviour {
 
 		// Create the goal at the end of the path.
 		GameObject goal = Instantiate (goalPrefab);
-		goal.name = "Goal";
 		goal.transform.parent = levelManager.transform.FindChild ("Platforms").transform;
-		goal.transform.position = fullPath[fullPath.Length - 1].GetEnd () + Vector3.up * 0.05f;
+		goal.transform.position = fullPath[fullPath.Count - 1].GetEnd () + Vector3.up * 0.05f;
 		
 		// Create virtual platforms from the input.
 		foreach (PlatformInput input in platformInput) {
 			GameObject virtualPlatform = Instantiate (virtualPlatformPrefab);
-			virtualPlatform.name = "VirtualPlatform";
 			virtualPlatform.transform.parent = levelManager.transform.FindChild ("Platforms").transform;
 			Vector3 startCorner = new Vector3 (input.startX, input.startY, input.startZ);
 			Vector3 endCorner = new Vector3 (input.endX, input.endY, input.endZ);
@@ -91,20 +133,20 @@ public class LevelCreator : MonoBehaviour {
 		}
 
 		// Create enemies from the input.
-		Enemy[] enemies = new Enemy[enemyInput.Length];
-		for (int i = 0; i < enemyInput.Length; i++) {
-			if (enemyInput[i].enemyIndex < enemyPrefabs.Length) {
-				Enemy enemy = Instantiate (enemyPrefabs[enemyInput[i].enemyIndex]) as Enemy;
-				enemies[i] = enemy;
+		List<Enemy> enemies = new List<Enemy> (enemyInput.Count);
+		foreach (EnemyInput input in enemyInput) {
+			if (input.enemyIndex < enemyPrefabs.Length) {
+				Enemy enemy = Instantiate (enemyPrefabs[input.enemyIndex]) as Enemy;
+				enemies.Add (enemy);
 				enemy.transform.parent = levelManager.transform.FindChild ("Enemies").transform;
-				int pathLength = enemyInput[i].path.Length - 1;
-				PathComponent[] enemyPath = new PathComponent[pathLength];
-				for (int j = 0; j < pathLength; j++) {
-					PathComponent pathComponent = CreatePath (enemyInput[i].path[j], enemyInput[i].path[j + 1]);
-					enemyPath[j] = pathComponent;
-					if (j > 0) {
-						pathComponent.previousPath = enemyPath[j - 1];
-						enemyPath[j - 1].nextPath = pathComponent;
+				int pathLength = input.path.Count - 1;
+				List<PathComponent> enemyPath = new List<PathComponent> (pathLength);
+				for (int i = 0; i < pathLength; i++) {
+					PathComponent pathComponent = CreatePath (input.path[i], input.path[i + 1]);
+					enemyPath.Add (pathComponent);
+					if (i > 0) {
+						pathComponent.previousPath = enemyPath[i - 1];
+						enemyPath[i - 1].nextPath = pathComponent;
 					}
 					pathComponent.transform.parent = enemy.transform;
 				}
@@ -114,24 +156,24 @@ public class LevelCreator : MonoBehaviour {
 		}
 
 		// Create coins from the input.
-		Coin[] coins = new Coin[coinInput.Length];
-		for (int i = 0; i < coinInput.Length; i++) {
+		List<Coin> coins = new List<Coin>(coinInput.Count);
+		foreach (CoinInput input in coinInput) {
 			Coin coin = Instantiate (coinPrefab) as Coin;
 			coin.transform.parent = levelManager.transform.FindChild ("Coins").transform;
-			coin.transform.position = new Vector3 (coinInput[i].x, coinInput[i].y, coinInput[i].z);
-			coins[i] = coin;
+			coin.transform.position = new Vector3 (input.x, input.y, input.z);
+			coins.Add (coin);
 		}
 
 		// Create blocks from the input.
-		Block[] blocks = new Block[blockInput.Length];
-		for (int i = 0; i < blockInput.Length; i++) {
-			Block block = Instantiate (blockPrefabs[blockInput[i].blockIndex]) as Block;
-			if (blockInput[i].contentIndex != -1) {
-				block.contents = itemPrefabs[blockInput[i].contentIndex];
+		List<Block> blocks = new List<Block> (blockInput.Count);
+		foreach (BlockInput input in blockInput) {
+			Block block = Instantiate (blockPrefabs[input.blockIndex]) as Block;
+			if (input.contentIndex != -1) {
+				block.contents = itemPrefabs[input.contentIndex];
 			}
 			block.transform.parent = levelManager.transform.FindChild ("Blocks").transform;
-			block.transform.position = new Vector3 (blockInput[i].x, blockInput[i].y, blockInput[i].z);
-			blocks[i] = block;
+			block.transform.position = new Vector3 (input.x, input.y, input.z);
+			blocks.Add (block);
 		}
 
 		// Pass the needed data to the level manager to store.

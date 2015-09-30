@@ -1,4 +1,6 @@
-﻿// Used to add a path for a level.
+﻿using System.Collections.Generic;
+
+// Used to add a path for a level.
 public struct PathInput {
 	// The position of a path vertex.
 	public float x, y, z;
@@ -7,6 +9,12 @@ public struct PathInput {
 		this.x = x;
 		this.y = y;
 		this.z = z;
+	}
+
+	public PathInput (JSONObject json) {
+		this.x = json.list [0].n;
+		this.y = json.list [1].n;
+		this.z = json.list [2].n;
 	}
 }
 
@@ -25,6 +33,16 @@ public struct PlatformInput {
 		this.endY = endY;
 		this.endZ = endZ;
 	}
+
+	public PlatformInput (JSONObject json) {
+		JSONObject corners = json.GetField ("platform").list [0];
+		this.startX = corners.list [0].n;
+		this.startY = corners.list [1].n;
+		this.startZ = corners.list [2].n;
+		this.endX = corners.list [3].n;
+		this.endY = corners.list [4].n;
+		this.endZ = corners.list [5].n;
+	}
 }
 
 // Used to add enemies into a level.
@@ -32,9 +50,9 @@ public struct EnemyInput {
 	// The index of the type of enemy.
 	public int enemyIndex;
 	// The vertices of the path the enemy will follow.
-	public PathInput[] path;
+	public List<PathInput> path;
 
-	public EnemyInput (int enemyIndex, PathInput[] path) {
+	public EnemyInput (int enemyIndex, List<PathInput> path) {
 		this.enemyIndex = enemyIndex;
 		this.path = path;
 	}
@@ -49,6 +67,12 @@ public struct CoinInput {
 		this.x = x;
 		this.y = y;
 		this.z = z;
+	}
+
+	public CoinInput (JSONObject json) {
+		this.x = json.list [0].n;
+		this.y = json.list [1].n;
+		this.z = json.list [2].n;
 	}
 }
 

@@ -1,0 +1,50 @@
+{
+	"route": [
+				[3.329739,0.055,-0.259506], 
+				[1.329739,0.055,-0.259504],
+				[1.334739,0.0548638,-0.75489], 
+				[0.939739,0.054638,-0.74989], 
+				[0.9347399,0.5741258,0.7979478]
+			 ],
+
+	"virtual_platform":{
+						"platform":[
+										[0.6260657,0.964,0.055,1.1260657,1.064,0.555]
+								   ]
+						},
+		
+	"enemies":  [
+			{
+				"enemy": 
+					{
+						"enemy_type": "0",
+						"enemy_path": [[1.329739,0.055,-0.259504], [1.334739,0.0548638,-0.75489]]
+					}
+
+			}
+
+		],
+	"coins": [
+				{
+					"position": [2.849,0.866,-0.291687]
+			 	},
+			 	{
+					"position": [2.706,0.943,-0.291687]
+			 	},
+			 	{
+					"position": [2.563,0.866,-0.291687]
+			 	}
+			 ]
+}
+
+
+//json parameters for our input:
+//each surface polygon information within each surface
+//each surface waypoints?? -> can be derived
+//each surface jumpability? -> can be derived
+
+//things tested: surface walls to jump over, graps - jumpable and not, non rectangular surfaces, non linear path
+//things to test: slant surfaces, multiple paths to choose from (corwded objects) objects to go under, objects on tables?, curcular surfaces
+
+
+
