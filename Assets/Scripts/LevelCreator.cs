@@ -29,7 +29,7 @@ public class LevelCreator : MonoBehaviour {
 	public Material lineMaterial;
 
 	// Where to get the JSON data from.
-	public string url = "http://127.0.0.1:8000/api/dummyJSON/";
+	public string url = "http://127.0.0.1:8000";
 	// Hard-coded JSON asset for now.
 	public TextAsset json;
 

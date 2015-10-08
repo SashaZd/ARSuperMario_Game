@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System;
 
 // Responds to keypresses to control the character.
 public class Player : MonoBehaviour {
@@ -8,6 +8,16 @@ public class Player : MonoBehaviour {
 	PathMovement pathMovement;
 	// The rigid body controlling the object's physics.
 	Rigidbody body;
+	
+	// The normal walking speed of the player.
+	public float baseMoveSpeed = 0.01f;
+	// The maximum running speed of the player.
+	public float runSpeed;
+	// The amount that speed is incremented every tick when acclerating to run speed.
+	float speedIncrement;
+
+	// The initial velocity of the player's jump.
+	const float jumpSpeed = 3;
 
 	// Ticks after the player has reached the goal.
 	int goalTick;
@@ -23,6 +33,12 @@ public class Player : MonoBehaviour {
 	void Start () {
 		pathMovement = GetComponent<PathMovement> ();
 		body = GetComponent<Rigidbody> ();
+
+		pathMovement.moveSpeed = baseMoveSpeed;
+		if (runSpeed < baseMoveSpeed) {
+			runSpeed = baseMoveSpeed * 1.5f;
+		}
+		speedIncrement = (runSpeed - baseMoveSpeed) / 30f;
 	}
 
 	// Update is called once per frame.
@@ -33,13 +49,16 @@ public class Player : MonoBehaviour {
 			bool backward = Input.GetKey (KeyCode.LeftArrow) || Input.GetKey (KeyCode.A);
 			bool jump = Input.GetKey (KeyCode.Space) || Input.GetKey (KeyCode.UpArrow) || Input.GetKey (KeyCode.W);
 			bool reset = Input.GetKey (KeyCode.R);
+			bool run = Input.GetKey (KeyCode.H);
 
 			if (forward ^ backward) {
 				pathMovement.MoveAlongPath (forward);
 			}
 
+			UpdateRun (run && (forward ^ backward));
+
 			if (jump) {
-				pathMovement.jump ();
+				Jump ();
 			}
 
 			if (reset || PathUtil.OnFloor (gameObject)) {
@@ -57,10 +76,36 @@ public class Player : MonoBehaviour {
 		}
 	}
 
+	// Makes the player jump if it is grounded.
+	void Jump () {
+		// Check if the player is on the ground.
+		if ((Physics.Raycast (transform.position + Vector3.right * pathMovement.GetSideOffset(), Vector3.down, pathMovement.GetGroundOffset() + 0.001f) ||
+		     Physics.Raycast (transform.position + Vector3.left * pathMovement.GetSideOffset(), Vector3.down, pathMovement.GetGroundOffset() + 0.001f) ||
+		     Physics.Raycast (transform.position + Vector3.back * pathMovement.GetSideOffset(), Vector3.down, pathMovement.GetGroundOffset() + 0.001f) ||
+		     Physics.Raycast (transform.position + Vector3.forward * pathMovement.GetSideOffset(), Vector3.down, pathMovement.GetGroundOffset() + 0.001f) ||
+		     Physics.Raycast (transform.position, Vector3.down, pathMovement.GetGroundOffset() + 0.001f)) &&
+		    Math.Abs (body.velocity.y) < 0.001) {
+			body.velocity += Vector3.up * jumpSpeed;
+		}
+	}
+
+	// Speeds up the player if running. Reverts back to normal speed if not.
+	void UpdateRun (bool isRunning) {
+		if (isRunning) {
+			if (pathMovement.moveSpeed < runSpeed) {
+				pathMovement.moveSpeed += speedIncrement;
+			}
+		} else {
+			if (pathMovement.moveSpeed > baseMoveSpeed) {
+				pathMovement.moveSpeed -= speedIncrement;
+			}
+		}
+	}
+
 	// Causes the player to bounce after stomping on an enemy.
 	// Also increases the player's score.
 	public void StompEnemy () {
-		Vector3 setVelocity = new Vector3 (body.velocity.x, pathMovement.jumpSpeed, body.velocity.z);
+		Vector3 setVelocity = new Vector3 (body.velocity.x, jumpSpeed, body.velocity.z);
 		body.velocity = setVelocity;
 		score += 100;
 	}
@@ -75,7 +120,7 @@ public class Player : MonoBehaviour {
 	// Plays an animation upon reaching the goal.
 	public void HitGoal () {
 		body.useGravity = false;
-		body.velocity = Vector3.up * pathMovement.jumpSpeed;
+		body.velocity = Vector3.up * jumpSpeed;
 		goalTick = 1;
 	}
 

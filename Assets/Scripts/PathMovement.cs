@@ -16,10 +16,8 @@ public class PathMovement : MonoBehaviour {
 	// How far along the path the object is.
 	public float pathProgress = 0;
 
-	// The speed that the object moves at.
+	// The speed that the object moves at per tick.
 	public float moveSpeed = 0.01f;
-	// The initial velocity of the object's jump.
-	public float jumpSpeed = 3;
 	// The rigid body controlling the object's physics.
 	Rigidbody body;
 	// The distance from the center of the object to the ground while grounded.
@@ -51,6 +49,16 @@ public class PathMovement : MonoBehaviour {
 		groundOffset = GetComponent<Collider> ().bounds.extents.y;
 	}
 
+	// Gets the offset between the center of the player and the ground while grounded.
+	public float GetGroundOffset () {
+		return groundOffset;
+	}
+
+	// Gets the offset between the center of the player and the side of the player.
+	public float GetSideOffset () {
+		return sideOffset;
+	}
+
 	// Resets the position of the object to its initial position.
 	public void ResetPosition () {
 		currentPath = startPath;
@@ -70,6 +78,12 @@ public class PathMovement : MonoBehaviour {
 			initiated = true;
 		}
 		transform.position = startPosition;
+	}
+
+	// Moves the object forward along the ribbon path.
+	// Returns whether the object was able to move.
+	public bool MoveAlongPath () {
+		return MoveAlongPath (true);
 	}
 
 	// Moves the object along the ribbon path.
@@ -113,17 +127,5 @@ public class PathMovement : MonoBehaviour {
 		// Move the object.
 		PathUtil.SetXZ (transform, currentPath.GetPositionInPath (pathProgress));
 		return true;
-	}
-
-	// Makes the object jump if it is grounded.
-	public void jump () {
-		if ((Physics.Raycast (transform.position + Vector3.right * sideOffset, Vector3.down, groundOffset + 0.001f) ||
-		     Physics.Raycast (transform.position + Vector3.left * sideOffset, Vector3.down, groundOffset + 0.001f) ||
-		     Physics.Raycast (transform.position + Vector3.back * sideOffset, Vector3.down, groundOffset + 0.001f) ||
-		     Physics.Raycast (transform.position + Vector3.forward * sideOffset, Vector3.down, groundOffset + 0.001f) ||
-		     Physics.Raycast (transform.position, Vector3.down, groundOffset + 0.001f)) &&
-		    Math.Abs (body.velocity.y) < 0.001) {
-			body.velocity += Vector3.up * jumpSpeed;
-		}
 	}
 }
