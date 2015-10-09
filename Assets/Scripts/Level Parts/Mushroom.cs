@@ -3,10 +3,21 @@ using System;
 
 // Makes the player grow in size and gain an extra hit.
 public class Mushroom : Item {
+
+	// The movement speed of the mushroom.
+	public float moveSpeed = 0.01f;
+	// The pathing system for the mushroom.
+	PathMovement movement;
 	
 	// Use this for initialization.
 	void Start () {
-		PathUtil.FindClosestPath (transform.position, GetComponent<PathMovement> ());
+		movement = GetComponent<PathMovement> ();
+		PathUtil.FindClosestPath (transform.position, movement);
+	}
+
+	// Makes the mushroom start moving after emerging from a question block.
+	public override void EmergeFromBlock() {
+		movement.moveSpeed = moveSpeed;
 	}
 
 	// Powers up the player upon collision.

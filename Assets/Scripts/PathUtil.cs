@@ -17,7 +17,7 @@ public class PathUtil {
 
 	// Sets the y component of a transform's position.
 	public static void SetY (Transform target, float newY) {
-		Vector3 setPosition = new Vector3 (target.position.x, target.position.y, target.position.z);
+		Vector3 setPosition = new Vector3 (target.position.x, newY, target.position.z);
 		target.position = setPosition;
 	}
 	

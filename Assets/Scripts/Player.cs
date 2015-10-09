@@ -17,7 +17,11 @@ public class Player : MonoBehaviour {
 	float speedIncrement;
 
 	// The initial velocity of the player's jump.
-	const float jumpSpeed = 3;
+	public float jumpSpeed = 2.5f;
+	// Timer for varying the player's jump height.
+	int jumpTimer = 0;
+	// Threshold for limiting jump height.
+	public int baseMaxJumpTimer = 6;
 
 	// Ticks after the player has reached the goal.
 	int goalTick;
@@ -57,9 +61,7 @@ public class Player : MonoBehaviour {
 
 			UpdateRun (run && (forward ^ backward));
 
-			if (jump) {
-				Jump ();
-			}
+			Jump (jump);
 
 			if (reset || PathUtil.OnFloor (gameObject)) {
 				LevelManager.GetInstance ().ResetLevel ();
@@ -76,16 +78,25 @@ public class Player : MonoBehaviour {
 		}
 	}
 
-	// Makes the player jump if it is grounded.
-	void Jump () {
-		// Check if the player is on the ground.
-		if ((Physics.Raycast (transform.position + Vector3.right * pathMovement.GetSideOffset(), Vector3.down, pathMovement.GetGroundOffset() + 0.001f) ||
-		     Physics.Raycast (transform.position + Vector3.left * pathMovement.GetSideOffset(), Vector3.down, pathMovement.GetGroundOffset() + 0.001f) ||
-		     Physics.Raycast (transform.position + Vector3.back * pathMovement.GetSideOffset(), Vector3.down, pathMovement.GetGroundOffset() + 0.001f) ||
-		     Physics.Raycast (transform.position + Vector3.forward * pathMovement.GetSideOffset(), Vector3.down, pathMovement.GetGroundOffset() + 0.001f) ||
-		     Physics.Raycast (transform.position, Vector3.down, pathMovement.GetGroundOffset() + 0.001f)) &&
-		    Math.Abs (body.velocity.y) < 0.001) {
-			body.velocity += Vector3.up * jumpSpeed;
+	// Handles the player jumping.
+	void Jump (bool isJumping) {
+		// Varies the player's jump height.
+		if (isJumping && jumpTimer < baseMaxJumpTimer * pathMovement.moveSpeed / baseMoveSpeed) {
+			// Check if the player is on the ground.
+			if ((Physics.Raycast (transform.position + Vector3.right * pathMovement.GetSideOffset (), Vector3.down, pathMovement.GetGroundOffset () + 0.001f) ||
+				Physics.Raycast (transform.position + Vector3.left * pathMovement.GetSideOffset (), Vector3.down, pathMovement.GetGroundOffset () + 0.001f) ||
+				Physics.Raycast (transform.position + Vector3.back * pathMovement.GetSideOffset (), Vector3.down, pathMovement.GetGroundOffset () + 0.001f) ||
+				Physics.Raycast (transform.position + Vector3.forward * pathMovement.GetSideOffset (), Vector3.down, pathMovement.GetGroundOffset () + 0.001f) ||
+				Physics.Raycast (transform.position, Vector3.down, pathMovement.GetGroundOffset () + 0.001f)) &&
+				Math.Abs (body.velocity.y) < 0.001) {
+				jumpTimer++;
+			}
+			if (jumpTimer > 0) {
+				body.velocity = PathUtil.SetY (body.velocity, jumpSpeed);
+				jumpTimer++;
+			}
+		} else {
+			jumpTimer = 0;
 		}
 	}
 
@@ -107,6 +118,7 @@ public class Player : MonoBehaviour {
 	public void StompEnemy () {
 		Vector3 setVelocity = new Vector3 (body.velocity.x, jumpSpeed, body.velocity.z);
 		body.velocity = setVelocity;
+		jumpTimer++;
 		score += 100;
 	}
 

@@ -11,17 +11,43 @@ public class QuestionBlock : Block {
 	// The material the question block will take on after being hit.
 	public Material hitMaterial;
 
+	// The amount to increase the object's height by every tick.
+	float contentIncrement;
+	// Timer used to animate contents coming out of the block.
+	float contentHeight = 0;
+	// The object that is emerging from the block.
+	GameObject contentObject;
+
 	// Use this for initialization.
 	void Start () {
 		startMaterial = GetComponent<Renderer> ().material;
 	}
 
+	// Update is called once per frame.
+	void Update () {
+		if (contentIncrement > 0) {
+			PathUtil.SetY (contentObject.transform, contentObject.transform.position.y + contentIncrement);
+			contentHeight += contentIncrement;
+			if (contentHeight > contentIncrement * 30) {
+				contentIncrement = 0;
+				contentObject.GetComponent<Rigidbody> ().useGravity = true;
+				contentObject.GetComponent<Collider> ().enabled = true;
+				contentObject.GetComponent<Item> ().EmergeFromBlock ();
+				contentObject = null;
+			}
+		}
+	}
+
 	// Spawns the contents of the block above the block.
 	public override void HitBlock () {
 		if (!wasHit) {
-			GameObject newObject = Instantiate (contents);
-			newObject.transform.parent = LevelManager.GetInstance ().gameObject.transform.FindChild ("Items").transform;
-			newObject.transform.position = new Vector3 (transform.position.x, transform.position.y + GetComponent<Collider> ().bounds.extents.y, transform.position.z);
+			contentObject = Instantiate (contents);
+			contentObject.transform.parent = LevelManager.GetInstance ().gameObject.transform.FindChild ("Items").transform;
+			contentObject.transform.position = transform.position;
+			contentIncrement = GetComponent<Collider> ().bounds.extents.y / 30;
+			contentObject.GetComponent<Rigidbody> ().useGravity = false;
+			contentObject.GetComponent<Collider> ().enabled = false;
+			contentObject.GetComponent<PathMovement> ().moveSpeed = 0;
 			wasHit = true;
 			GetComponent<Renderer> ().material = hitMaterial;
 		}
