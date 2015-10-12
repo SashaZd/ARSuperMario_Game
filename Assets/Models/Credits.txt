@@ -1,1 +1,2 @@
-Coin: "Super Mario Bros - Coin" (https://sketchfab.com/models/c49858b084e74f35b8631d9e2c2c2971) by torchwurm, licensed under CC BY 4.0 (http://creativecommons.org/licenses/by/4.0/)
+-Coin: "Super Mario Bros - Coin" (https://sketchfab.com/models/c49858b084e74f35b8631d9e2c2c2971) by torchwurm, licensed under CC BY 4.0 (http://creativecommons.org/licenses/by/4.0/)
+-Pencil: "Pencil" (https://sketchfab.com/models/632c8acd80c0445697219ef9120532eb) by sookendestroy1, licensed under CC BY 4.0 (http://creativecommons.org/licenses/by/4.0/)

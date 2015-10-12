@@ -34,7 +34,7 @@ public class PathMovement : MonoBehaviour {
 			ResetPosition ();
 		}
 		UpdateGroundOffset ();
-		sideOffset = GetComponent<Collider> ().bounds.extents.x;
+		sideOffset = GetComponent<Collider> ().bounds.extents.z;
 	}
 
 	// Update is called once per frame.
