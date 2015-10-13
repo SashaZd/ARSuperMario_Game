@@ -59,10 +59,9 @@ public class LevelCreator : MonoBehaviour {
 		// Parse platforms from JSON.
 		JSONObject platformJSON = input.GetField ("virtual_platform");
 		List<PlatformInput> platformInput = new List<PlatformInput> (platformJSON.list.Count);
-		platformInput.Add (new PlatformInput (platformJSON));
-		/*foreach (JSONObject platform in platformJSON) {
+		foreach (JSONObject platform in platformJSON.list) {
 			platformInput.Add (new PlatformInput (platform));
-		}*/
+		}
 
 		// Parse enemies from JSON.
 		JSONObject enemyJSON = input.GetField ("enemies");
@@ -116,7 +115,10 @@ public class LevelCreator : MonoBehaviour {
 		// Create the goal at the end of the path.
 		GameObject goal = Instantiate (goalPrefab);
 		goal.transform.parent = levelManager.transform.FindChild ("Platforms").transform;
-		goal.transform.position = fullPath[fullPath.Count - 1].GetEnd () + Vector3.up * 0.05f;
+		Vector3 pathEnd = fullPath[fullPath.Count - 1].GetEnd () + Vector3.up * 0.025f;
+		RaycastHit hit;
+		Physics.Raycast (pathEnd, Vector3.down, out hit, PathUtil.ceilingHeight * 1.1f);
+		goal.transform.position = hit.point + Vector3.up * 0.025f;
 		
 		// Create virtual platforms from the input.
 		foreach (PlatformInput input in platformInput) {
@@ -131,6 +133,7 @@ public class LevelCreator : MonoBehaviour {
 				Enemy enemy = Instantiate (enemyPrefabs[input.enemyIndex]) as Enemy;
 				enemies.Add (enemy);
 				enemy.transform.parent = levelManager.transform.FindChild ("Enemies").transform;
+				// Create the enemy path.
 				int pathLength = input.path.Count - 1;
 				List<PathComponent> enemyPath = new List<PathComponent> (pathLength);
 				for (int i = 0; i < pathLength; i++) {
@@ -141,6 +144,11 @@ public class LevelCreator : MonoBehaviour {
 						enemyPath[i - 1].nextPath = pathComponent;
 					}
 					pathComponent.transform.parent = enemy.transform;
+				}
+				// Allow enemy paths to be circular.
+				if (input.path[0].Equals (input.path[input.path.Count - 1])) {
+					enemyPath[0].previousPath = enemyPath[pathLength - 1];
+					enemyPath[pathLength - 1].nextPath = enemyPath[0];
 				}
 				enemy.GetComponent<PathMovement> ().currentPath = enemyPath[0];
 				enemy.GetComponent<PathMovement> ().startPath = enemyPath[0];

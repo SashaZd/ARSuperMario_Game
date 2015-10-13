@@ -21,15 +21,15 @@ public class PathUtil {
 		target.position = setPosition;
 	}
 	
+	// Creates a new vector with a changed y component.
+	public static Vector3 SetY (Vector3 vector, float newY) {
+		return new Vector3 (vector.x, newY, vector.z);
+	}
+	
 	// Scales the y component of the target's position.
 	public static void ScaleY (Transform target, float scale) {
 		Vector3 setScale = new Vector3 (target.localScale.x, target.localScale.y * scale, target.localScale.z);
 		target.localScale = setScale;
-	}
-
-	// Creates a new vector with a changed y component.
-	public static Vector3 SetY (Vector3 vector, float newY) {
-		return new Vector3 (vector.x, newY, vector.z);
 	}
 
 	// Creates a new vector with the y component set to 0.

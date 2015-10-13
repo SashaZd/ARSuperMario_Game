@@ -170,6 +170,7 @@ public class PathComponent : MonoBehaviour {
 		}
 	}
 
+	// Calculates certain variables in the path.
 	void CalculateDimensions () {
 		length = PathUtil.RemoveY (end - start);
 		direction = Vector3.Normalize (length);

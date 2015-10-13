@@ -35,6 +35,7 @@ public class PathMovement : MonoBehaviour {
 		}
 		UpdateGroundOffset ();
 		sideOffset = GetComponent<Collider> ().bounds.extents.z;
+		transform.eulerAngles = Vector3.up * Vector3.Angle(Vector3.right, currentPath.GetDirection (true));
 	}
 
 	// Update is called once per frame.
@@ -78,6 +79,7 @@ public class PathMovement : MonoBehaviour {
 			initiated = true;
 		}
 		transform.position = startPosition;
+		transform.eulerAngles = Vector3.up * Vector3.Angle(Vector3.right, currentPath.GetDirection (true));
 	}
 
 	// Moves the object forward along the ribbon path.
@@ -126,6 +128,11 @@ public class PathMovement : MonoBehaviour {
 
 		// Move the object.
 		PathUtil.SetXZ (transform, currentPath.GetPositionInPath (pathProgress));
+		// Rotate the object to face forward.
+		Vector3 direction = currentPath.GetDirection (forward);
+		float angle = Mathf.Atan2 (direction.x, direction.z) * 180 / Mathf.PI;
+		Vector3 facing = Vector3.up * angle;
+		transform.eulerAngles = facing;
 		return true;
 	}
 }
