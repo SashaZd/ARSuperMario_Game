@@ -18,10 +18,13 @@ public class Player : MonoBehaviour {
 
 	// The initial velocity of the player's jump.
 	public float jumpSpeed = 2.5f;
-	// Timer for varying the player's jump height.
-	int jumpTimer = 0;
 	// Threshold for limiting jump height.
 	public int baseMaxJumpTimer = 6;
+	// Timer for varying the player's jump height.
+	int jumpHeightTimer = 0;
+	// Whether the player is on the ground and can jump.
+	bool isGrounded;
+
 
 	// Ticks after the player has reached the goal.
 	int goalTick;
@@ -63,8 +66,16 @@ public class Player : MonoBehaviour {
 
 			Jump (jump);
 
-			if (reset || PathUtil.OnFloor (gameObject)) {
+			// Terminal velocity
+			if (-body.velocity.y > jumpSpeed) {
+				body.velocity = PathUtil.SetY (body.velocity, -jumpSpeed);
+			}
+
+			if (reset) {
 				LevelManager.GetInstance ().ResetLevel ();
+			}
+			if (PathUtil.OnFloor (gameObject)) {
+				KillPlayer ();
 			}
 		} else {
 			// Wait for the win animation before resetting the level.
@@ -78,25 +89,29 @@ public class Player : MonoBehaviour {
 		}
 	}
 
+	// Marks the player as grounded.
+	public void OnTriggerEnter (Collider collider) {
+		isGrounded = true;
+	}
+
+	// Marks the player as airborne.
+	public void OnTriggerExit (Collider collider) {
+		isGrounded = false;
+	}
+
 	// Handles the player jumping.
 	void Jump (bool isJumping) {
 		// Varies the player's jump height.
-		if (isJumping && jumpTimer < baseMaxJumpTimer * pathMovement.moveSpeed / baseMoveSpeed) {
-			// Check if the player is on the ground.
-			if ((Physics.Raycast (transform.position + Vector3.right * pathMovement.GetSideOffset (), Vector3.down, pathMovement.GetGroundOffset () + 0.001f) ||
-				Physics.Raycast (transform.position + Vector3.left * pathMovement.GetSideOffset (), Vector3.down, pathMovement.GetGroundOffset () + 0.001f) ||
-				Physics.Raycast (transform.position + Vector3.back * pathMovement.GetSideOffset (), Vector3.down, pathMovement.GetGroundOffset () + 0.001f) ||
-				Physics.Raycast (transform.position + Vector3.forward * pathMovement.GetSideOffset (), Vector3.down, pathMovement.GetGroundOffset () + 0.001f) ||
-				Physics.Raycast (transform.position, Vector3.down, pathMovement.GetGroundOffset () + 0.001f)) &&
-				Math.Abs (body.velocity.y) < 0.001) {
-				jumpTimer++;
+		if (isJumping && jumpHeightTimer < baseMaxJumpTimer * pathMovement.moveSpeed / baseMoveSpeed) {
+			if (isGrounded) {
+				jumpHeightTimer++;
 			}
-			if (jumpTimer > 0) {
+			if (jumpHeightTimer > 0) {
 				body.velocity = PathUtil.SetY (body.velocity, jumpSpeed);
-				jumpTimer++;
+				jumpHeightTimer++;
 			}
 		} else {
-			jumpTimer = 0;
+			jumpHeightTimer = 0;
 		}
 	}
 
@@ -118,7 +133,7 @@ public class Player : MonoBehaviour {
 	public void StompEnemy () {
 		Vector3 setVelocity = new Vector3 (body.velocity.x, jumpSpeed, body.velocity.z);
 		body.velocity = setVelocity;
-		jumpTimer++;
+		jumpHeightTimer++;
 		score += 100;
 	}
 
@@ -150,8 +165,13 @@ public class Player : MonoBehaviour {
 		if (size > 1) {
 			SetSize (1);
 		} else {
-			LevelManager.GetInstance ().ResetLevel ();
+			KillPlayer ();
 		}
+	}
+
+	// Kills the player and resets the level.
+	public void KillPlayer () {
+		LevelManager.GetInstance ().ResetLevel ();
 	}
 
 	// Increases the player's size.

@@ -57,5 +57,6 @@ public class QuestionBlock : Block {
 	public override void Reset () {
 		wasHit = false;
 		GetComponent<Renderer> ().material = startMaterial;
+		contentIncrement = 0;
 	}
 }

@@ -5,7 +5,7 @@ using System;
 public class Mushroom : Item {
 
 	// The movement speed of the mushroom.
-	public float moveSpeed = 0.01f;
+	public float moveSpeed = 0.005f;
 	// The pathing system for the mushroom.
 	PathMovement movement;
 	

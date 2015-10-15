@@ -9,8 +9,8 @@ public class Stompable : MonoBehaviour {
 	void OnCollisionEnter (Collision collision) {
 		if (collision.collider.tag == "Player") {
 			// Check if the player is high enough to flatten the enemy.
-			float playerStompHeight = collision.collider.transform.position.y - collision.collider.bounds.extents.y / 2;
-			float enemyHeadHeight = transform.position.y + GetComponent<Collider> ().bounds.extents.y * 0.45f;
+			float playerStompHeight = collision.collider.transform.position.y - collision.collider.bounds.extents.y;
+			float enemyHeadHeight = transform.position.y + GetComponent<Collider> ().bounds.extents.y * 0.49f;
 			if (playerStompHeight > enemyHeadHeight || collision.collider.transform.GetComponent<Rigidbody> ().velocity.y < -0.01f) {
 				collision.gameObject.GetComponent<Player> ().StompEnemy ();
 				GetComponent<Enemy> ().KillEntity ();

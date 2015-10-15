@@ -79,7 +79,8 @@ public class LevelCreator : MonoBehaviour {
 
 		// Hard-coded block input until JSON is figured out here.
 		List<BlockInput> blockInput = new List<BlockInput> (1);
-		blockInput.Add (new BlockInput (0, 0, 2.328f, 0.782f, -0.247f));
+		//blockInput.Add (new BlockInput (0, 0, 2.328f, 0.782f, -0.247f));
+		blockInput.Add (new BlockInput (0, 0, 0.5f, 1.5f, 0.5f));
 
 		CreateLevel (pathInput, platformInput, enemyInput, coinInput, blockInput);
 	}
