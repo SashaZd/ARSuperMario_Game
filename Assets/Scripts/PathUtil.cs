@@ -15,6 +15,12 @@ public class PathUtil {
 		target.position = setPosition;
 	}
 
+	// Sets the x and z components of a transform's position while leaving the y component unmodified.
+	public static void SetXZ (Transform target, Vector2 newPosition) {
+		Vector3 setPosition = new Vector3 (newPosition.x, target.position.y, newPosition.y);
+		target.position = setPosition;
+	}
+
 	// Sets the y component of a transform's position.
 	public static void SetY (Transform target, float newY) {
 		Vector3 setPosition = new Vector3 (target.position.x, newY, target.position.z);
@@ -73,6 +79,24 @@ public class PathUtil {
 		}
 		pathMovement.currentPath = closestPath;
 		pathMovement.pathProgress = PathUtil.ProjectionPointLine (position, closestPath.GetStart (), closestPath.GetEnd ()).x / closestPath.GetLength ().x;
+	}
+
+	// Moves the object towards a target position, ignoring y.
+	public static void MoveTowardsXZ (Transform current, Vector3 target, float maxDeltaDistance) {
+		Vector2 currentPositionXZ = PathUtil.Vector2From3 (current.position);
+		Vector2 targetPositionXZ = PathUtil.Vector2From3 (target);
+		Vector2 travelDistance = Vector2.MoveTowards (currentPositionXZ, targetPositionXZ, maxDeltaDistance);
+		SetXZ (current, travelDistance);
+	}
+
+	// Creates a 2D vector from a 3D vector's x and z components.
+	public static Vector2 Vector2From3 (Vector3 vector) {
+		return new Vector2 (vector.x, vector.z);
+	}
+
+	// Gets the magnitude of the x and z components of a vector.
+	public static float GetMagnitudeXZ (Vector3 vector) {
+		return Vector2.SqrMagnitude (Vector2From3 (vector));
 	}
 
 	// Makes a vector from a size 3 JSON array.
