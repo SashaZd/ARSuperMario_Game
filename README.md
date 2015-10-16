@@ -1,2 +1,2 @@
 # AR_Mario
-Augmented reality/Procedurally generated Mario levels
+Game component for augmented reality/procedurally generated Mario levels.
