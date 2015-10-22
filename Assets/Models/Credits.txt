@@ -1,2 +1,4 @@
+-Book: "Red Book" (https://sketchfab.com/models/cebc4e77880d48a6a0771dfd36ab0d96) by sookendestroy1, licensed under CC BY 4.0 (http://creativecommons.org/licenses/by/4.0/)
+-Coffee: "Coffee Cup" (https://sketchfab.com/models/07a8412f77c14d448b7dbfef95e35116) by ajj1995, licensed under CC BY 4.0 (http://creativecommons.org/licenses/by/4.0/)
 -Coin: "Super Mario Bros - Coin" (https://sketchfab.com/models/c49858b084e74f35b8631d9e2c2c2971) by torchwurm, licensed under CC BY 4.0 (http://creativecommons.org/licenses/by/4.0/)
 -Pencil: "Pencil" (https://sketchfab.com/models/632c8acd80c0445697219ef9120532eb) by sookendestroy1, licensed under CC BY 4.0 (http://creativecommons.org/licenses/by/4.0/)

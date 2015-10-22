@@ -25,6 +25,10 @@ public class Player : MonoBehaviour {
 	// Whether the player is on the ground and can jump.
 	bool isGrounded;
 
+	// The amount of frames that the player will be invincible after being hit.
+	const int INVINCIBLEDELAY = 120;
+	// Timer for the player being invincible.
+	int invincibleTimer = 0;
 
 	// Ticks after the player has reached the goal.
 	int goalTick;
@@ -33,8 +37,13 @@ public class Player : MonoBehaviour {
 
 	// The current score of the player.
 	public int score = 0;
-	// The size (power-up status) of the player.
-	public int size = 1;
+	// The current power-up of the player.
+	Power power = Power.None;
+	// The current scale of the player.
+	int size = 1;
+
+	// The current power-up the player has.
+	public enum Power {None, Mushroom, Coffee};
 
 	// Use this for initialization.
 	void Start () {
@@ -65,6 +74,8 @@ public class Player : MonoBehaviour {
 			UpdateRun (run && (forward ^ backward));
 
 			Jump (jump);
+
+			UpdateInvincible ();
 
 			// Terminal velocity
 			if (-body.velocity.y > jumpSpeed) {
@@ -128,6 +139,18 @@ public class Player : MonoBehaviour {
 		}
 	}
 
+	// Handles invincibility frames after being hit) {
+	void UpdateInvincible () {
+		if (invincibleTimer > 0) {
+			invincibleTimer--;
+			if (invincibleTimer > INVINCIBLEDELAY / 2) {
+				GetComponent<Renderer> ().enabled = invincibleTimer / 20 % 2 == 1;
+			} else {
+				GetComponent<Renderer> ().enabled = invincibleTimer / 10 % 2 == 0;
+			}
+		}
+	}
+
 	// Causes the player to bounce after stomping on an enemy.
 	// Also increases the player's score.
 	public void StompEnemy () {
@@ -162,10 +185,13 @@ public class Player : MonoBehaviour {
 
 	// Reduces the player's size. Kills the player if the size is at a minimum.
 	public void TakeDamage () {
-		if (size > 1) {
-			SetSize (1);
-		} else {
-			KillPlayer ();
+		if (invincibleTimer == 0) {
+			if (power == Power.None) {
+				KillPlayer ();
+			} else {
+				LosePower ();
+				invincibleTimer = INVINCIBLEDELAY;
+			}
 		}
 	}
 
@@ -174,22 +200,61 @@ public class Player : MonoBehaviour {
 		LevelManager.GetInstance ().ResetLevel ();
 	}
 
-	// Increases the player's size.
-	public void HitMushroom () {
-		if (size == 1) {
-			SetSize (2);
-		}
-	}
-
 	// Increases the player's score after collecting a coin.
 	public void CollectCoin () {
 		score += 100;
+	}
+
+	// Sets the player's current power-up.
+	public void SetPower (Power newPower) {
+		if (power == newPower) {
+			return;
+		}
+		if (power != Power.None) {
+			LosePower ();
+		}
+		switch (newPower) {
+		case Power.Mushroom: 
+			SetSize (2);
+			break;
+		case Power.Coffee:
+			baseMoveSpeed *= 2;
+			runSpeed *= 2;
+			break;
+		default:
+			break;
+		}
+		power = newPower;
+	}
+
+	// Causes the player to lose the current power-up
+	public void LosePower () {
+		if (power == Power.None) {
+			KillPlayer ();
+		} else {
+			switch (power) {
+			case Power.Mushroom:
+				SetSize (1);
+				break;
+			case Power.Coffee: 
+				baseMoveSpeed /= 2;
+				runSpeed /= 2;
+				break;
+			default:
+				break;
+			}
+			power = Power.None;
+		}
 	}
 
 	// Resets the position of the player.
 	public void Reset () {
 		pathMovement.ResetPosition ();
 		score = 0;
-		SetSize (1);
+		if (power != Power.None) {
+			LosePower ();
+		}
+		invincibleTimer = 0;
+		GetComponent<Renderer> ().enabled = true;
 	}
 }

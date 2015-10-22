@@ -30,7 +30,9 @@ public class QuestionBlock : Block {
 			contentHeight += contentIncrement;
 			if (contentHeight > contentIncrement * 30) {
 				contentIncrement = 0;
-				contentObject.GetComponent<Rigidbody> ().useGravity = true;
+				if (contentObject.GetComponent<Rigidbody> ()) {
+					contentObject.GetComponent<Rigidbody> ().useGravity = true;
+				}
 				contentObject.GetComponent<Collider> ().enabled = true;
 				contentObject.GetComponent<Item> ().EmergeFromBlock ();
 				contentObject = null;
@@ -45,9 +47,11 @@ public class QuestionBlock : Block {
 			contentObject.transform.parent = LevelManager.GetInstance ().gameObject.transform.FindChild ("Items").transform;
 			contentObject.transform.position = transform.position;
 			contentIncrement = GetComponent<Collider> ().bounds.extents.y / 30;
-			contentObject.GetComponent<Rigidbody> ().useGravity = false;
+			if (contentObject.GetComponent<Rigidbody> ()) {
+			    contentObject.GetComponent<Rigidbody> ().useGravity = false;
+			    contentObject.GetComponent<PathMovement> ().moveSpeed = 0;
+			}
 			contentObject.GetComponent<Collider> ().enabled = false;
-			contentObject.GetComponent<PathMovement> ().moveSpeed = 0;
 			wasHit = true;
 			GetComponent<Renderer> ().material = hitMaterial;
 		}

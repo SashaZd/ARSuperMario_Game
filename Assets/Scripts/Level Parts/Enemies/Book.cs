@@ -52,9 +52,9 @@ public class Book : MonoBehaviour, IMovement {
 			PathUtil.MoveTowardsXZ (transform, targetPosition, 0.005f);
 			if (PathUtil.GetMagnitudeXZ (transform.position - targetPosition) < Mathf.Epsilon) {
 				stage = Stage.Fall;
-				body.useGravity = true;
 			}
 		} else if (stage == Stage.Fall) {
+			body.useGravity = true;
 			if (Mathf.Abs (body.velocity.y) < Mathf.Epsilon && fallDelay++ > 20) {
 				fallDelay = 0;
 				body.useGravity = false;
@@ -63,7 +63,14 @@ public class Book : MonoBehaviour, IMovement {
 		}
 	}
 
-	// Kills the player instantly upon collision.
+	// Causes the book to give up chase if something is in the way.
+	void OnCollisionEnter (Collision collision) {
+		if (stage == Stage.Rise || stage == Stage.Chase) {
+			stage = Stage.Fall;
+		}
+	}
+
+	// Checks if the player is within targeting range.
 	void OnTriggerEnter (Collider collider) {
 		if (collider.tag == "Player") {
 			target = collider.GetComponent<Player> ();
@@ -71,7 +78,7 @@ public class Book : MonoBehaviour, IMovement {
 		}
 	}
 
-	// Kills the player instantly upon collision.
+	// Checks if the player has stepped outside targeting range.
 	void OnTriggerExit (Collider collider) {
 		if (collider.tag == "Player") {
 			targetingPlayer = false;

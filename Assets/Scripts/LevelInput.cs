@@ -78,4 +78,10 @@ public struct BlockInput {
 		this.contentIndex = contentIndex;
 		position = new Vector3 (x, y, z);
 	}
+
+	public BlockInput (JSONObject json) {
+		this.blockIndex = (int) json.GetField ("type").n;
+		this.contentIndex = (int) json.GetField ("contents").n;
+		position = PathUtil.MakeVectorFromJSON (json.GetField ("position"));
+	}
 }

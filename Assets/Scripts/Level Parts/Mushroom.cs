@@ -16,15 +16,13 @@ public class Mushroom : Item {
 	}
 
 	// Makes the mushroom start moving after emerging from a question block.
-	public override void EmergeFromBlock() {
+	public override void EmergeFromBlock () {
 		movement.moveSpeed = moveSpeed;
+		base.EmergeFromBlock ();
 	}
 
-	// Powers up the player upon collision.
-	void OnCollisionEnter (Collision collision) {
-		if (collision.collider.tag == "Player") {
-			collision.gameObject.GetComponent<Player> ().HitMushroom ();
-			Destroy (gameObject);
-		}
+	// Increases the player's size.
+	public override void HitPlayer (Player player) {
+		player.SetPower (Player.Power.Mushroom);
 	}
 }

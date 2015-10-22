@@ -70,17 +70,19 @@ public class LevelCreator : MonoBehaviour {
 			enemyInput.Add (new EnemyInput (enemy.GetField ("enemy")));
 		}
 
-		//Parse coins from JSON.
+		// Parse coins from JSON.
 		JSONObject coinJSON = input.GetField ("coins");
 		List<CoinInput> coinInput = new List<CoinInput> (coinJSON.list.Count);
 		foreach (JSONObject coin in coinJSON.list) {
 			coinInput.Add (new CoinInput(coin.GetField ("position")));
 		}
 
-		// Hard-coded block input until JSON is figured out here.
-		List<BlockInput> blockInput = new List<BlockInput> (1);
-		//blockInput.Add (new BlockInput (0, 0, 2.328f, 0.782f, -0.247f));
-		blockInput.Add (new BlockInput (0, 0, 0.5f, 1.5f, 0.5f));
+		// Parse blocks from JSON.
+		JSONObject blockJSON = input.GetField ("blocks");
+		List<BlockInput> blockInput = new List<BlockInput> (blockJSON.list.Count);
+		foreach (JSONObject block in blockJSON.list) {
+			blockInput.Add (new BlockInput (block));
+		}
 
 		CreateLevel (pathInput, platformInput, enemyInput, coinInput, blockInput);
 	}
@@ -134,25 +136,29 @@ public class LevelCreator : MonoBehaviour {
 				Enemy enemy = Instantiate (enemyPrefabs[input.enemyIndex]) as Enemy;
 				enemies.Add (enemy);
 				enemy.transform.parent = levelManager.transform.FindChild ("Enemies").transform;
-				// Create the enemy path.
-				int pathLength = input.path.Count - 1;
-				List<PathComponent> enemyPath = new List<PathComponent> (pathLength);
-				for (int i = 0; i < pathLength; i++) {
-					PathComponent pathComponent = CreatePath (input.path[i], input.path[i + 1]);
-					enemyPath.Add (pathComponent);
-					if (i > 0) {
-						pathComponent.previousPath = enemyPath[i - 1];
-						enemyPath[i - 1].nextPath = pathComponent;
+				if (enemy.GetComponent<PathMovement> ()) {
+					// Create the enemy path.
+					int pathLength = input.path.Count - 1;
+					List<PathComponent> enemyPath = new List<PathComponent> (pathLength);
+					for (int i = 0; i < pathLength; i++) {
+						PathComponent pathComponent = CreatePath (input.path[i], input.path[i + 1]);
+						enemyPath.Add (pathComponent);
+						if (i > 0) {
+							pathComponent.previousPath = enemyPath[i - 1];
+							enemyPath[i - 1].nextPath = pathComponent;
+						}
+						pathComponent.transform.parent = enemy.transform;
 					}
-					pathComponent.transform.parent = enemy.transform;
+					// Allow enemy paths to be circular.
+					if (input.path[0].Equals (input.path[input.path.Count - 1])) {
+						enemyPath[0].previousPath = enemyPath[pathLength - 1];
+						enemyPath[pathLength - 1].nextPath = enemyPath[0];
+					}
+					enemy.GetComponent<PathMovement> ().currentPath = enemyPath[0];
+					enemy.GetComponent<PathMovement> ().startPath = enemyPath[0];
+				} else {
+					enemy.transform.position = input.path[0].position;
 				}
-				// Allow enemy paths to be circular.
-				if (input.path[0].Equals (input.path[input.path.Count - 1])) {
-					enemyPath[0].previousPath = enemyPath[pathLength - 1];
-					enemyPath[pathLength - 1].nextPath = enemyPath[0];
-				}
-				enemy.GetComponent<PathMovement> ().currentPath = enemyPath[0];
-				enemy.GetComponent<PathMovement> ().startPath = enemyPath[0];
 			}
 		}
 
