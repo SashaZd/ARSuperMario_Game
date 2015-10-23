@@ -247,6 +247,11 @@ public class Player : MonoBehaviour {
 		}
 	}
 
+	// Returns true if the player has won the level.
+	public bool HasWon () {
+		return goalTick > 0;
+	}
+
 	// Resets the position of the player.
 	public void Reset () {
 		pathMovement.ResetPosition ();
@@ -256,5 +261,9 @@ public class Player : MonoBehaviour {
 		}
 		invincibleTimer = 0;
 		GetComponent<Renderer> ().enabled = true;
+		ToothpickPower toothpickPower = GetComponent<ToothpickPower> ();
+		if (toothpickPower) {
+			GameObject.Destroy (toothpickPower);
+		}
 	}
 }

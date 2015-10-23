@@ -28,7 +28,7 @@ public class QuestionBlock : Block {
 		if (contentIncrement > 0) {
 			PathUtil.SetY (contentObject.transform, contentObject.transform.position.y + contentIncrement);
 			contentHeight += contentIncrement;
-			if (contentHeight > contentIncrement * 30) {
+			if (contentHeight > contentIncrement * 60) {
 				contentIncrement = 0;
 				if (contentObject.GetComponent<Rigidbody> ()) {
 					contentObject.GetComponent<Rigidbody> ().useGravity = true;

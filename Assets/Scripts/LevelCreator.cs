@@ -166,7 +166,7 @@ public class LevelCreator : MonoBehaviour {
 		List<Coin> coins = new List<Coin>(coinInput.Count);
 		foreach (CoinInput input in coinInput) {
 			Coin coin = Instantiate (coinPrefab) as Coin;
-			coin.transform.parent = levelManager.transform.FindChild ("Coins").transform;
+			coin.transform.parent = levelManager.transform.FindChild ("Items").transform;
 			coin.transform.position = input.position;
 			coins.Add (coin);
 		}
