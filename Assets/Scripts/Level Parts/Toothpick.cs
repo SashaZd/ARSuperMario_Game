@@ -14,9 +14,10 @@ public class Toothpick : Item {
 	const float TRAVELSPEED = 4f;
 
 	// Use this for initialization.
-	void Start () {
+	protected override void Start () {
 		body = GetComponent<Rigidbody> ();
 		body.velocity = direction * TRAVELSPEED;
+		base.Start ();
 		Update ();
 	}
 	

@@ -26,6 +26,8 @@ public class PathMovement : MonoBehaviour {
 	float sideOffset;
 	// The number of places on the object to check for side collisions.
 	const int NUMSIDECHECKS = 30;
+	// Extra distance to count as a side collision.
+	const float COLLISIONOFFSET = 0.001f;
 	
 	// Use this for initialization.
 	void Start () {
@@ -91,17 +93,23 @@ public class PathMovement : MonoBehaviour {
 	// Moves the object along the ribbon path.
 	// Returns whether the object was able to move.
 	public bool MoveAlongPath (bool forward) {
+		float moveDistance = moveSpeed;
+
 		// Check for side collision.
-		Vector3 sidePosition = transform.position + Vector3.down * groundOffset * .99f;
-		float sideIncrement = groundOffset * 2 / NUMSIDECHECKS;
+		Vector3 sidePosition = transform.position + Vector3.down * (groundOffset - COLLISIONOFFSET);
+		float sideIncrement = groundOffset * 2 / NUMSIDECHECKS + 2 * COLLISIONOFFSET;
 		for (int i = 0; i < NUMSIDECHECKS; i++) {
-			if (Physics.Raycast (sidePosition, currentPath.GetDirection (forward), sideOffset * 1.01f)) {
-				return false;
+			RaycastHit hit;
+			if (Physics.Raycast (sidePosition, currentPath.GetDirection (forward), out hit, sideOffset + moveSpeed + COLLISIONOFFSET)) {
+				moveDistance = Mathf.Min (moveDistance, hit.distance - sideOffset - COLLISIONOFFSET);
+				if (moveDistance < Mathf.Epsilon) {
+					return false;
+				}
 			}
 			sidePosition.y += sideIncrement;
 		}
 
-		pathProgress = currentPath.IncrementPathProgress (pathProgress, moveSpeed, forward);
+		pathProgress = currentPath.IncrementPathProgress (pathProgress, moveDistance, forward);
 
 		// Check if the object has moved past the path's bounds.
 		// Switch to the next/previous path if so.

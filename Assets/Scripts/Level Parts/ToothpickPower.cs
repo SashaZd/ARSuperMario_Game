@@ -26,7 +26,6 @@ public class ToothpickPower : MonoBehaviour {
 				Vector3 facing = new Vector3 (Mathf.Sin (transform.eulerAngles.y * Mathf.PI / 180), 0, Mathf.Cos (transform.eulerAngles.y * Mathf.PI / 180));
 				Vector3 spawnPosition = transform.position + GetComponent<Collider> ().bounds.extents.z * facing;
 				Toothpick toothpick = GameObject.Instantiate (toothpickPrefab, spawnPosition, this.transform.rotation) as Toothpick;
-				toothpick.transform.parent = LevelManager.GetInstance ().gameObject.transform.FindChild ("Items").transform;
 				toothpick.direction = facing;
 				if (--numToothpicks <= 0) {
 					Destroy (this);

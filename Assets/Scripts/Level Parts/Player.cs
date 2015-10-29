@@ -102,12 +102,21 @@ public class Player : MonoBehaviour {
 
 	// Marks the player as grounded.
 	public void OnTriggerEnter (Collider collider) {
-		isGrounded = true;
+		if (isGround (collider.tag)) {
+			isGrounded = true;
+		}
 	}
 
 	// Marks the player as airborne.
 	public void OnTriggerExit (Collider collider) {
-		isGrounded = false;
+		if (isGround (collider.tag)) {
+			isGrounded = false;
+		}
+	}
+
+	// Checks whether the collided object's tag is ground or not.
+	bool isGround (string tag) {
+		return tag != "Enemy" && tag != "Item";
 	}
 
 	// Handles the player jumping.
@@ -198,11 +207,6 @@ public class Player : MonoBehaviour {
 	// Kills the player and resets the level.
 	public void KillPlayer () {
 		LevelManager.GetInstance ().ResetLevel ();
-	}
-
-	// Increases the player's score after collecting a coin.
-	public void CollectCoin () {
-		score += 100;
 	}
 
 	// Sets the player's current power-up.

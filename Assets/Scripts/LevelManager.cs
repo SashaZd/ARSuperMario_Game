@@ -44,9 +44,12 @@ public class LevelManager : MonoBehaviour {
 	// All enemies in the level.
 	public List<Enemy> enemies;
 	// All coins in the level.
-	public List<Coin> coins;
+	public List<Item> items;
 	// All blocks in the level.
 	public List<Block> blocks;
+
+	// Whether the items list is currently being iterated through.
+	public bool itemIterating = false;
 
 	// Resets the positions of all entities in the level.
 	public void ResetLevel () {
@@ -54,14 +57,20 @@ public class LevelManager : MonoBehaviour {
 		foreach (Enemy enemy in enemies) {
 			enemy.Reset ();
 		}
-		foreach (Coin coin in coins) {
-			coin.Reset ();
-		}
 		foreach (Block block in blocks) {
 			block.Reset ();
 		}
-		foreach (Transform item in transform.FindChild ("Items").transform) {
-			item.gameObject.GetComponent<Item> ().Reset ();
+		itemIterating = true;
+		foreach (Item item in items) {
+			item.Reset ();
+		}
+		itemIterating = false;
+		for (int i = 0; i < items.Count; i++) {
+			Item item = items[i];
+			if (item.willRemove) {
+				items.RemoveAt (i);
+				i--;
+			}
 		}
 	}
 }

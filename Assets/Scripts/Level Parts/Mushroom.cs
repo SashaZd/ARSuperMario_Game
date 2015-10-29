@@ -10,9 +10,10 @@ public class Mushroom : Item {
 	PathMovement movement;
 	
 	// Use this for initialization.
-	void Start () {
+	protected override void Start () {
 		movement = GetComponent<PathMovement> ();
 		PathUtil.FindClosestPath (transform.position, movement);
+		base.Start ();
 	}
 
 	// Makes the mushroom start moving after emerging from a question block.

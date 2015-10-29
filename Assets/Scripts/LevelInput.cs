@@ -17,12 +17,14 @@ public struct PathInput {
 
 // Used to add virtual platforms to a level.
 public struct PlatformInput {
+	public int type;
 	// The position of a corner of the platform.
 	public List<Vector3> vertices;
 
 	public PlatformInput (JSONObject json) {
 		vertices = new List<Vector3> ();
-		foreach (JSONObject vertex in json.GetField ("platform").list) {
+		type = (int) json.GetField ("platform_type").n;
+		foreach (JSONObject vertex in json.GetField ("platform_points").list) {
 			vertices.Add (PathUtil.MakeVectorFromJSON (vertex));
 		}
 	}
@@ -50,17 +52,21 @@ public struct EnemyInput {
 	}
 }
 
-// Used to add coins into a level.
-public struct CoinInput {
-	// The position of the coin.
+// Used to add collectibles into a level.
+public struct CollectibleInput {
+	// The type of collectible.
+	public string type;
+	// The position of the collectible.
 	public Vector3 position;
 
-	public CoinInput (float x, float y, float z) {
+	public CollectibleInput (float x, float y, float z) {
+		type = "coin";
 		position = new Vector3 (x, y, z);
 	}
 
-	public CoinInput (JSONObject json) {
-		position = PathUtil.MakeVectorFromJSON (json);
+	public CollectibleInput (JSONObject json) {
+		type = json.GetField ("collectible_type").str;
+		position = PathUtil.MakeVectorFromJSON (json.GetField ("position"));
 	}
 }
 

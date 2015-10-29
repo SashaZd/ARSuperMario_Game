@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System.Net;
@@ -42,12 +42,13 @@ public class LevelCreator : MonoBehaviour {
 		yield return www;
 
 		// Test connecting to server for dummy JSON data.
-		// Requires the back-end Django server to be set up.
+		// Requires the back-end server to be set up.
 		JSONObject input = new JSONObject (www.text);
-		print (input.HasField("GET") ? input.GetField ("GET").str : "Cannot connect to server.");
 
-		//Hard-coded JSON resource for now.
-		input = new JSONObject (json.text);
+		//Hard-coded JSON resource for testing.
+		if (json != null) {
+			input = new JSONObject (json.text);
+		}
 
 		// Parse the path from JSON.
 		JSONObject pathJSON = input.GetField ("route");
@@ -67,28 +68,33 @@ public class LevelCreator : MonoBehaviour {
 		JSONObject enemyJSON = input.GetField ("enemies");
 		List<EnemyInput> enemyInput = new List<EnemyInput> (enemyJSON.list.Count);
 		foreach (JSONObject enemy in enemyJSON.list) {
-			enemyInput.Add (new EnemyInput (enemy.GetField ("enemy")));
+			enemyInput.Add (new EnemyInput (enemy));
 		}
 
-		// Parse coins from JSON.
-		JSONObject coinJSON = input.GetField ("coins");
-		List<CoinInput> coinInput = new List<CoinInput> (coinJSON.list.Count);
-		foreach (JSONObject coin in coinJSON.list) {
-			coinInput.Add (new CoinInput(coin.GetField ("position")));
+		// Parse collectibles from JSON.
+		JSONObject collectibleJSON = input.GetField ("collectibles");
+		List<CollectibleInput> collectibleInput = new List<CollectibleInput> (collectibleJSON.list.Count);
+		foreach (JSONObject collectible in collectibleJSON.list) {
+			collectibleInput.Add (new CollectibleInput(collectible));
 		}
 
 		// Parse blocks from JSON.
 		JSONObject blockJSON = input.GetField ("blocks");
-		List<BlockInput> blockInput = new List<BlockInput> (blockJSON.list.Count);
-		foreach (JSONObject block in blockJSON.list) {
-			blockInput.Add (new BlockInput (block));
+		List<BlockInput> blockInput;
+		if (blockJSON == null) {
+			blockInput = new List<BlockInput> (0);
+		} else {
+			blockInput = new List<BlockInput> (blockJSON.list.Count);
+			foreach (JSONObject block in blockJSON.list) {
+				blockInput.Add (new BlockInput (block));
+			}
 		}
 
-		CreateLevel (pathInput, platformInput, enemyInput, coinInput, blockInput);
+		CreateLevel (pathInput, platformInput, enemyInput, collectibleInput, blockInput);
 	}
 
 	// Creates a level from the given input.
-	public void CreateLevel (List<PathInput> pathInput, List<PlatformInput> platformInput, List<EnemyInput> enemyInput, List<CoinInput> coinInput, List<BlockInput> blockInput) {
+	public void CreateLevel (List<PathInput> pathInput, List<PlatformInput> platformInput, List<EnemyInput> enemyInput, List<CollectibleInput> collectibleInput, List<BlockInput> blockInput) {
 		LevelManager levelManager = LevelManager.GetInstance ();
 		
 		// Construct the path from the input points.
@@ -118,7 +124,7 @@ public class LevelCreator : MonoBehaviour {
 		// Create the goal at the end of the path.
 		GameObject goal = Instantiate (goalPrefab);
 		goal.transform.parent = levelManager.transform.FindChild ("Platforms").transform;
-		Vector3 pathEnd = fullPath[fullPath.Count - 1].GetEnd () + Vector3.up * 0.025f;
+		Vector3 pathEnd = fullPath[fullPath.Count - 1].GetEnd () + Vector3.up * 0.05f;
 		RaycastHit hit;
 		Physics.Raycast (pathEnd, Vector3.down, out hit, PathUtil.ceilingHeight * 1.1f);
 		goal.transform.position = hit.point + Vector3.up * 0.025f;
@@ -162,13 +168,15 @@ public class LevelCreator : MonoBehaviour {
 			}
 		}
 
-		// Create coins from the input.
-		List<Coin> coins = new List<Coin>(coinInput.Count);
-		foreach (CoinInput input in coinInput) {
-			Coin coin = Instantiate (coinPrefab) as Coin;
-			coin.transform.parent = levelManager.transform.FindChild ("Items").transform;
-			coin.transform.position = input.position;
-			coins.Add (coin);
+		// Create collectibles from the input.
+		List<Item> items = new List<Item>(collectibleInput.Count);
+		foreach (CollectibleInput input in collectibleInput) {
+			if (input.type == "coin") {
+				Coin coin = Instantiate (coinPrefab) as Coin;
+				coin.transform.parent = levelManager.transform.FindChild ("Items").transform;
+				coin.transform.position = input.position;
+				coin.SetInitPosition (input.position);
+			}
 		}
 
 		// Create blocks from the input.
@@ -186,7 +194,7 @@ public class LevelCreator : MonoBehaviour {
 		// Pass the needed data to the level manager to store.
 		levelManager.fullPath = fullPath;
 		levelManager.enemies = enemies;
-		levelManager.coins = coins;
+		levelManager.items = items;
 		levelManager.blocks = blocks;
 	}
 

@@ -44,7 +44,6 @@ public class QuestionBlock : Block {
 	public override void HitBlock () {
 		if (!wasHit) {
 			contentObject = Instantiate (contents);
-			contentObject.transform.parent = LevelManager.GetInstance ().gameObject.transform.FindChild ("Items").transform;
 			contentObject.transform.position = transform.position;
 			contentIncrement = GetComponent<Collider> ().bounds.extents.y / 30;
 			if (contentObject.GetComponent<Rigidbody> ()) {
@@ -62,5 +61,7 @@ public class QuestionBlock : Block {
 		wasHit = false;
 		GetComponent<Renderer> ().material = startMaterial;
 		contentIncrement = 0;
+		contentHeight = 0;
+		contentObject = null;
 	}
 }
