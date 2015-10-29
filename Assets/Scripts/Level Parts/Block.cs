@@ -5,7 +5,7 @@ using System.Collections;
 public class Block : MonoBehaviour {
 
 	// The item inside the block.
-	public GameObject contents;
+	public Item contents;
 
 	// Checks if a player hit the block from underneath.
 	void OnCollisionEnter (Collision collision) {

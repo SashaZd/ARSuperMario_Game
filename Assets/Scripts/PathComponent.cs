@@ -5,9 +5,9 @@ using System;
 public class PathComponent : MonoBehaviour {
 
 	// The position of the start of the path.
-	Vector3 start;
+	public Vector3 start;
 	// The position of the end of the path.
-	Vector3 end;
+	public Vector3 end;
 
 	// The vector length of the path.
 	Vector3 length;
@@ -22,7 +22,7 @@ public class PathComponent : MonoBehaviour {
 	public PathComponent previousPath;
 
 	// The length of individual segments of the rendered line.
-	const float LINELENGTH = 0.05f;
+	const float LINELENGTH = 0.5f;
 	// The thickness of the rendered line.
 	const float LINETHICKNESS = 0.05f;
 	// The material to draw the line with.
@@ -132,6 +132,10 @@ public class PathComponent : MonoBehaviour {
 
 	// Draws a dotted line along the ribbon path.
 	public void DrawLine () {
+		if (magnitude < Mathf.Epsilon) {
+			return;
+		}
+
 		int numLines = (int)(magnitude / LINELENGTH / 2) + 1;
 		for (int i = 0; i < numLines; i++) {
 
@@ -175,6 +179,15 @@ public class PathComponent : MonoBehaviour {
 		length = PathUtil.RemoveY (end - start);
 		direction = Vector3.Normalize (length);
 		magnitude = Vector3.Magnitude (length);
+		// Take the component out of the path if its length is 0.
+		if (magnitude < Mathf.Epsilon) {
+			if (previousPath != null) {
+				previousPath.nextPath = nextPath;
+			}
+			if (nextPath != null) {
+				nextPath.previousPath = previousPath;
+			}
+		}
 	}
 
 }

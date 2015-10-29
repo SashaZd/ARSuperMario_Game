@@ -15,10 +15,8 @@ public class LevelCreator : MonoBehaviour {
 	// Block resources to be instantiated from.
 	public Block[] blockPrefabs;
 
-	// Coin resource to be instantiated from.
-	public Coin coinPrefab;
 	// Item resources to be instantiated from.
-	public GameObject[] itemPrefabs;
+	public Item[] itemPrefabs;
 
 	// The player.
 	public Player playerPrefab;
@@ -165,6 +163,17 @@ public class LevelCreator : MonoBehaviour {
 				} else {
 					enemy.transform.position = input.path[0].position;
 				}
+				// Make sure the enemy is above ground.
+				Collider enemyCollider = null;
+				foreach (Collider collider in enemy.GetComponents<Collider> ()) {
+					if (!collider.isTrigger) {
+						enemyCollider = collider;
+						break;
+					}
+				}
+				float offset = enemyCollider.bounds.extents.y;
+				Physics.Raycast (enemy.transform.position + Vector3.up * offset, Vector3.down, out hit, offset);
+				enemy.transform.position = hit.point + Vector3.up * offset / 2;
 			}
 		}
 
@@ -172,7 +181,7 @@ public class LevelCreator : MonoBehaviour {
 		List<Item> items = new List<Item>(collectibleInput.Count);
 		foreach (CollectibleInput input in collectibleInput) {
 			if (input.type == "coin") {
-				Coin coin = Instantiate (coinPrefab) as Coin;
+				Item coin = Instantiate (itemPrefabs[(int) Items.Coin]) as Item;
 				coin.transform.parent = levelManager.transform.FindChild ("Items").transform;
 				coin.transform.position = input.position;
 				coin.SetInitPosition (input.position);

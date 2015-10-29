@@ -28,6 +28,7 @@ public class PathMovement : MonoBehaviour {
 	const int NUMSIDECHECKS = 30;
 	// Extra distance to count as a side collision.
 	const float COLLISIONOFFSET = 0.001f;
+	bool rotates = false;
 	
 	// Use this for initialization.
 	void Start () {
@@ -38,6 +39,7 @@ public class PathMovement : MonoBehaviour {
 		UpdateGroundOffset ();
 		sideOffset = GetComponent<Collider> ().bounds.extents.z;
 		transform.eulerAngles = Vector3.up * Vector3.Angle(Vector3.right, currentPath.GetDirection (true));
+		rotates = GetComponent<Rotate> () != null;
 	}
 
 	// Update is called once per frame.
@@ -137,10 +139,12 @@ public class PathMovement : MonoBehaviour {
 		// Move the object.
 		PathUtil.SetXZ (transform, currentPath.GetPositionInPath (pathProgress));
 		// Rotate the object to face forward.
-		Vector3 direction = currentPath.GetDirection (forward);
-		float angle = Mathf.Atan2 (direction.x, direction.z) * 180 / Mathf.PI;
-		Vector3 facing = Vector3.up * angle;
-		transform.eulerAngles = facing;
+		if (!rotates) {
+			Vector3 direction = currentPath.GetDirection (forward);
+			float angle = Mathf.Atan2 (direction.x, direction.z) * 180 / Mathf.PI;
+			Vector3 facing = Vector3.up * angle;
+			transform.eulerAngles = facing;
+		}
 		return true;
 	}
 }

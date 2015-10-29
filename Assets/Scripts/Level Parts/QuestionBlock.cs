@@ -16,7 +16,7 @@ public class QuestionBlock : Block {
 	// Timer used to animate contents coming out of the block.
 	float contentHeight = 0;
 	// The object that is emerging from the block.
-	GameObject contentObject;
+	Item contentObject;
 
 	// Use this for initialization.
 	void Start () {
