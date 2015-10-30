@@ -28,6 +28,9 @@ public class PathMovement : MonoBehaviour {
 	const int NUMSIDECHECKS = 30;
 	// Extra distance to count as a side collision.
 	const float COLLISIONOFFSET = 0.001f;
+	// The layers to detect as collisions.
+	public LayerMask collisionLayers;
+	// Whether the object rotates at a constant speed.
 	bool rotates = false;
 	
 	// Use this for initialization.
@@ -102,7 +105,7 @@ public class PathMovement : MonoBehaviour {
 		float sideIncrement = groundOffset * 2 / NUMSIDECHECKS + 2 * COLLISIONOFFSET;
 		for (int i = 0; i < NUMSIDECHECKS; i++) {
 			RaycastHit hit;
-			if (Physics.Raycast (sidePosition, currentPath.GetDirection (forward), out hit, sideOffset + moveSpeed + COLLISIONOFFSET)) {
+			if (Physics.Raycast (sidePosition, currentPath.GetDirection (forward), out hit, sideOffset + moveSpeed + COLLISIONOFFSET, collisionLayers)) {
 				moveDistance = Mathf.Min (moveDistance, hit.distance - sideOffset - COLLISIONOFFSET);
 				if (moveDistance < Mathf.Epsilon) {
 					return false;

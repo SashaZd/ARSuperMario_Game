@@ -26,10 +26,20 @@ public class PathUtil {
 		Vector3 setPosition = new Vector3 (target.position.x, newY, target.position.z);
 		target.position = setPosition;
 	}
+
+	// Creates a new vector with a changed x component.
+	public static Vector3 SetX (Vector3 vector, float newX) {
+		return new Vector3 (newX, vector.y, vector.z);
+	}
 	
 	// Creates a new vector with a changed y component.
 	public static Vector3 SetY (Vector3 vector, float newY) {
 		return new Vector3 (vector.x, newY, vector.z);
+	}
+
+	// Creates a new vector with a changed z component.
+	public static Vector3 SetZ (Vector3 vector, float newZ) {
+		return new Vector3 (vector.x, vector.y, newZ);
 	}
 	
 	// Scales the y component of the target's position.

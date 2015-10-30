@@ -180,11 +180,23 @@ public class LevelCreator : MonoBehaviour {
 		// Create collectibles from the input.
 		List<Item> items = new List<Item>(collectibleInput.Count);
 		foreach (CollectibleInput input in collectibleInput) {
+			Item item = null;
 			if (input.type == "coin") {
-				Item coin = Instantiate (itemPrefabs[(int) Items.Coin]) as Item;
-				coin.transform.parent = levelManager.transform.FindChild ("Items").transform;
-				coin.transform.position = input.position;
-				coin.SetInitPosition (input.position);
+				item = Instantiate (itemPrefabs[(int) Items.Coin]) as Item;
+			} else if (input.type == "power_up_size") {
+				item = Instantiate (itemPrefabs[(int) Items.Mushroom]) as Item;
+			} else if (input.type == "power_up_speed") {
+				item = Instantiate (itemPrefabs[(int) Items.Coffee]) as Item;
+			} else if (input.type == "power_up_range") {
+				item = Instantiate (itemPrefabs[(int) Items.Toothpick]) as Item;
+			} else if (input.type == "power_up_melee") {
+				item = Instantiate (itemPrefabs[(int) Items.FlySwatter]) as Item;
+			}
+
+			if (item != null) {
+				item.transform.parent = levelManager.transform.FindChild ("Items").transform;
+				item.transform.position = input.position;
+				item.SetInitPosition (input.position);
 			}
 		}
 

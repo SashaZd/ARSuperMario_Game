@@ -11,6 +11,7 @@ public class Item : MonoBehaviour {
 	// Whether the item has emerged from the block containing it.
 	bool emerged = false;
 	// Whether the item will be untracked by the level manager.
+	[HideInInspector]
 	public bool willRemove = false;
 
 	// Use this for initialization.

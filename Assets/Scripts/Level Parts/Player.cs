@@ -15,6 +15,8 @@ public class Player : MonoBehaviour {
 	public float runSpeed;
 	// The amount that speed is incremented every tick when acclerating to run speed.
 	float speedIncrement;
+	// Whether the player can move around.
+	public bool canMove;
 
 	// The initial velocity of the player's jump.
 	public float jumpSpeed = 2.5f;
@@ -47,6 +49,7 @@ public class Player : MonoBehaviour {
 
 	// Use this for initialization.
 	void Start () {
+		canMove = true;
 		pathMovement = GetComponent<PathMovement> ();
 		body = GetComponent<Rigidbody> ();
 
@@ -67,13 +70,15 @@ public class Player : MonoBehaviour {
 			bool reset = Input.GetKey (KeyCode.R);
 			bool run = Input.GetKey (KeyCode.H);
 
-			if (forward ^ backward) {
-				pathMovement.MoveAlongPath (forward);
+			if (canMove) {
+				if (forward ^ backward) {
+					pathMovement.MoveAlongPath (forward);
+				}
+
+				UpdateRun (run && (forward ^ backward));
+
+				Jump (jump);
 			}
-
-			UpdateRun (run && (forward ^ backward));
-
-			Jump (jump);
 
 			UpdateInvincible ();
 
@@ -269,5 +274,14 @@ public class Player : MonoBehaviour {
 		if (toothpickPower) {
 			GameObject.Destroy (toothpickPower);
 		}
+		FlySwatterPower swatterPower = GetComponent<FlySwatterPower> ();
+		if (swatterPower) {
+			GameObject.Destroy (swatterPower);
+		}
+		Transform swatter = transform.FindChild ("FlySwatter(Clone)");
+		if (swatter) {
+			Destroy (swatter.gameObject);
+		}
+		canMove = true;
 	}
 }

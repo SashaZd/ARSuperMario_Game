@@ -71,7 +71,7 @@ public struct CollectibleInput {
 }
 
 // Enum mapping items to array indices.
-public enum Items {Coin, Mushroom, Coffee, Toothpick};
+public enum Items {Coin, Mushroom, Coffee, Toothpick, FlySwatter};
 
 // Used to add blocks into a level.
 public struct BlockInput {
