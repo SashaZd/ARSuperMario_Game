@@ -31,8 +31,9 @@ public class Toothpick : Item {
 
 	// Triggers events when colliding with certain objects.
 	void OnCollisionEnter (Collision collision) {
-		if (collision.collider.GetComponent<Enemy> ()) {
-			collision.collider.gameObject.SetActive (false);
+		Enemy enemy = GetComponent<Collider>().GetComponent<Enemy> ();
+		if (enemy != null) {
+			enemy.KillEntity ();
 		}
 		Destroy (gameObject);
 	}

@@ -2,6 +2,9 @@
 using System.Collections;
 
 public class Enemy : MonoBehaviour {
+
+	// Whether the enemy can be destroyed.
+	public bool invincible = false;
 	
 	// Update is called once per frame.
 	void Update () {
@@ -14,11 +17,15 @@ public class Enemy : MonoBehaviour {
 	public void Reset () {
 		gameObject.SetActive (true);
 		IMovement movement = GetComponent(typeof(IMovement)) as IMovement;
-		movement.Reset ();
+		if (movement != null) {
+			movement.Reset ();
+		}
 	}
 	
 	// Kills the enemy.
 	public void KillEntity () {
-		gameObject.SetActive (false);
+		if (!invincible) {
+			gameObject.SetActive (false);
+		}
 	}
 }
