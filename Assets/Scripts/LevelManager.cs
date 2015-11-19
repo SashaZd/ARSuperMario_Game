@@ -8,6 +8,8 @@ public class LevelManager : MonoBehaviour {
 	private static LevelManager instance;
 	// The audio source playing the background music.
 	AudioSource music;
+	// Whether player tracking is enabled.
+	public bool enableTracking = true;
 
 	// Sets the level manager instance.
 	void Awake () {
@@ -25,6 +27,9 @@ public class LevelManager : MonoBehaviour {
 		if (music.time >= 77.068817f) {
 			music.time = 9.118005f;
 			music.Play ();
+		}
+		if (enableTracking) {
+			float currentTime = Time.time;
 		}
 	}
 
@@ -71,6 +76,10 @@ public class LevelManager : MonoBehaviour {
 				items.RemoveAt (i);
 				i--;
 			}
+		}
+		Tracker tracker = GetComponent<Tracker> ();
+		if (tracker != null) {
+			tracker.Reset ();
 		}
 	}
 }
