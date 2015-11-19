@@ -16,7 +16,7 @@ public class Enemy : MonoBehaviour {
 	// Resets the position and direction of the enemy.
 	public void Reset () {
 		gameObject.SetActive (true);
-		IMovement movement = GetComponent(typeof(IMovement)) as IMovement;
+		Movement movement = GetComponent(typeof(Movement)) as Movement;
 		if (movement != null) {
 			movement.Reset ();
 		}

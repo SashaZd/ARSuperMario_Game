@@ -2,7 +2,7 @@
 using System.Collections;
 
 // Attempts to float above and squash the player.
-public class Book : MonoBehaviour, IMovement {
+public class Book : MonoBehaviour, Movement {
 
 	// The initial position of the book.
 	Vector3 startPosition;

@@ -2,7 +2,7 @@
 using System.Collections;
 
 // Moves like BackAndForthPath, but takes a long time to make turns.
-public class Pencil : MonoBehaviour, IMovement {
+public class Pencil : MonoBehaviour, Movement {
 	
 	// Controls the entity's movement along the ribbon path.
 	PathMovement pathMovement;

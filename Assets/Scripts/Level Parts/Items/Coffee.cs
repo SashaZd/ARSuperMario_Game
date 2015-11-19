@@ -6,6 +6,8 @@ public class Coffee : Item {
 
 	// Activates the coffee power-up on the player.
 	public override void HitPlayer (Player player) {
-		player.SetPower (Player.Power.Coffee);
+		if (player.GetComponent<CoffeePower> () == null) {
+			player.AddPower (player.gameObject.AddComponent<CoffeePower> ());
+		}
 	}
 }

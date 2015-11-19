@@ -16,11 +16,21 @@ public class FlySwatter : MonoBehaviour {
 	bool hit;
 	// Whether hit will be set to true next frame.
 	bool willHit = false;
+	// Whether the swatter will be destroyed after its animation finishes.
+	[HideInInspector]
+	public bool willDestroy = false;
 
-	// Use this for initialization.
-	void Start () {
+	// Move the fly swatter to its beginning position.
+	public void Initiate () {
+		timer = 0;
+		willHit = false;
+		hit = false;
+		transform.localPosition = Vector3.forward * 0.5f;
+		transform.localRotation = Quaternion.identity;
+		transform.localScale = Vector3.one;
 		initScale = transform.localScale;
 		transform.parent.GetComponent<Player> ().canMove = false;
+		gameObject.SetActive (true);
 	}
 	
 	// Update is called once per frame.
@@ -39,7 +49,11 @@ public class FlySwatter : MonoBehaviour {
 		}
 		if (timer++ > timeLimit) {
 			transform.parent.GetComponent<Player> ().canMove = true;
-			Destroy (gameObject);
+			if (willDestroy) {
+				Destroy (gameObject);
+			} else {
+				gameObject.SetActive (false);
+			}
 		}
 	}
 

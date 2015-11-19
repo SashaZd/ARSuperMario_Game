@@ -2,7 +2,7 @@
 using System.Collections;
 
 // Moves along the path until hitting a barrier, then turns around.
-public class BackAndForthPath : MonoBehaviour, IMovement {
+public class BackAndForthPath : MonoBehaviour, Movement {
 
 	// Controls the entity's movement along the ribbon path.
 	PathMovement pathMovement;

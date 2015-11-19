@@ -24,6 +24,8 @@ public class Mushroom : Item {
 
 	// Increases the player's size.
 	public override void HitPlayer (Player player) {
-		player.SetPower (Player.Power.Mushroom);
+		if (player.GetComponent<MushroomPower> () == null) {
+			player.AddPower (player.gameObject.AddComponent<MushroomPower> ());
+		}
 	}
 }

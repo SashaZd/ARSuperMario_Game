@@ -12,6 +12,7 @@ public class RandomUtil {
 		return random.Next (min, max);
 	}
 
+	// Gets a random boolean value.
 	public static bool RandomBoolean() {
 		return RandomInt (0, 2) == 0;
 	}

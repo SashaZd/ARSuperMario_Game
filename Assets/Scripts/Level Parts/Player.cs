@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System;
+using System.Collections.Generic;
 
 // Responds to keypresses to control the character.
 public class Player : MonoBehaviour {
@@ -8,6 +9,8 @@ public class Player : MonoBehaviour {
 	PathMovement pathMovement;
 	// The rigid body controlling the object's physics.
 	Rigidbody body;
+	// Renderer for displaying the player.
+	Renderer playerRenderer;
 	
 	// The normal walking speed of the player.
 	public float baseMoveSpeed = 0.01f;
@@ -16,6 +19,7 @@ public class Player : MonoBehaviour {
 	// The amount that speed is incremented every tick when acclerating to run speed.
 	float speedIncrement;
 	// Whether the player can move around.
+	[HideInInspector]
 	public bool canMove;
 
 	// The initial velocity of the player's jump.
@@ -37,21 +41,25 @@ public class Player : MonoBehaviour {
 	// The number of ticks to wait before resetting the level after winning.
 	const int MAXGOALTICKS = 60;
 
+	// Whether the player is dead and in a dying animation.
+	bool dead = false;
+
 	// The current score of the player.
 	public int score = 0;
-	// The current power-up of the player.
-	Power power = Power.None;
+	// The current power-ups of the player.
+	List<Power> powers = new List<Power> ();
+	// The number of power-ups the player has lost in this tick.
+	int lostPowers = 0;
 	// The current scale of the player.
 	int size = 1;
 
-	// The current power-up the player has.
-	public enum Power {None, Mushroom, Coffee};
-
 	// Use this for initialization.
 	void Start () {
-		canMove = true;
 		pathMovement = GetComponent<PathMovement> ();
 		body = GetComponent<Rigidbody> ();
+		playerRenderer = GetComponent<Renderer> ();
+
+		canMove = true;
 
 		pathMovement.moveSpeed = baseMoveSpeed;
 		if (runSpeed < baseMoveSpeed) {
@@ -61,14 +69,31 @@ public class Player : MonoBehaviour {
 	}
 
 	// Update is called once per frame.
-	void Update () {
-		if (goalTick == 0) {
+	void FixedUpdate () {
+		if (goalTick > 0) {
+			// Wait for the win animation before resetting the level.
+			if (goalTick > MAXGOALTICKS) {
+				goalTick = 0;
+				LevelManager.GetInstance ().ResetLevel ();
+			} else {
+				goalTick++;
+			}
+		} else if (dead) {
+			Color playerColor = playerRenderer.material.color;
+			playerColor.a -= 0.05f;
+			playerRenderer.material.color = playerColor;
+			body.constraints = body.constraints | RigidbodyConstraints.FreezePositionY;
+			if (playerColor.a < Mathf.Epsilon) {
+				LevelManager.GetInstance ().ResetLevel ();
+			}
+		} else {
 			// Get player input.
 			bool forward = Input.GetKey (KeyCode.RightArrow) || Input.GetKey (KeyCode.D);
 			bool backward = Input.GetKey (KeyCode.LeftArrow) || Input.GetKey (KeyCode.A);
 			bool jump = Input.GetKey (KeyCode.Space) || Input.GetKey (KeyCode.UpArrow) || Input.GetKey (KeyCode.W);
 			bool reset = Input.GetKey (KeyCode.R);
 			bool run = Input.GetKey (KeyCode.H);
+			bool powerKey = Input.GetKey (KeyCode.Return);
 
 			if (canMove) {
 				if (forward ^ backward) {
@@ -87,20 +112,24 @@ public class Player : MonoBehaviour {
 				body.velocity = PathUtil.SetY (body.velocity, -jumpSpeed);
 			}
 
+			lostPowers = 0;
+			if (powerKey) {
+				for (int i = 0; i < powers.Count; i++) {
+					Power power = powers[i];
+					power.PowerKey ();
+					if (lostPowers > 0) {
+						i -= lostPowers;
+						lostPowers = 0;
+					}
+				}
+			}
+
 			if (reset) {
 				LevelManager.GetInstance ().ResetLevel ();
 			}
+
 			if (PathUtil.OnFloor (gameObject)) {
 				KillPlayer ();
-			}
-		} else {
-			// Wait for the win animation before resetting the level.
-			if (goalTick > MAXGOALTICKS) {
-				goalTick = 0;
-				body.useGravity = true;
-				LevelManager.GetInstance ().ResetLevel ();
-			} else {
-				goalTick++;
 			}
 		}
 	}
@@ -121,7 +150,7 @@ public class Player : MonoBehaviour {
 
 	// Checks whether the collided object's tag is ground or not.
 	bool isGround (string tag) {
-		return tag != "Enemy" && tag != "Item";
+		return tag != "Enemy" && tag != "Item" && tag != "Weapon";
 	}
 
 	// Handles the player jumping.
@@ -131,7 +160,7 @@ public class Player : MonoBehaviour {
 			if (isGrounded) {
 				jumpHeightTimer++;
 			}
-			if (jumpHeightTimer > 0) {
+			if (jumpHeightTimer > 0 && body.velocity.y > -Mathf.Epsilon) {
 				body.velocity = PathUtil.SetY (body.velocity, jumpSpeed);
 				jumpHeightTimer++;
 			}
@@ -158,9 +187,9 @@ public class Player : MonoBehaviour {
 		if (invincibleTimer > 0) {
 			invincibleTimer--;
 			if (invincibleTimer > INVINCIBLEDELAY / 2) {
-				GetComponent<Renderer> ().enabled = invincibleTimer / 20 % 2 == 1;
+				playerRenderer.enabled = invincibleTimer / 20 % 2 == 1;
 			} else {
-				GetComponent<Renderer> ().enabled = invincibleTimer / 10 % 2 == 0;
+				playerRenderer.enabled = invincibleTimer / 10 % 2 == 0;
 			}
 		}
 	}
@@ -200,10 +229,11 @@ public class Player : MonoBehaviour {
 	// Reduces the player's size. Kills the player if the size is at a minimum.
 	public void TakeDamage () {
 		if (invincibleTimer == 0) {
-			if (power == Power.None) {
+			if (powers.Count == 0) {
 				KillPlayer ();
 			} else {
-				LosePower ();
+				int removeIndex = RandomUtil.RandomInt (0, powers.Count);
+				LosePower (powers[removeIndex]);
 				invincibleTimer = INVINCIBLEDELAY;
 			}
 		}
@@ -211,48 +241,21 @@ public class Player : MonoBehaviour {
 
 	// Kills the player and resets the level.
 	public void KillPlayer () {
-		LevelManager.GetInstance ().ResetLevel ();
+		dead = true;
 	}
 
-	// Sets the player's current power-up.
-	public void SetPower (Power newPower) {
-		if (power == newPower) {
-			return;
-		}
-		if (power != Power.None) {
-			LosePower ();
-		}
-		switch (newPower) {
-		case Power.Mushroom: 
-			SetSize (2);
-			break;
-		case Power.Coffee:
-			baseMoveSpeed *= 2;
-			runSpeed *= 2;
-			break;
-		default:
-			break;
-		}
-		power = newPower;
+	// Adds a power-up to the player.
+	public void AddPower (Power newPower) {
+		powers.Add (newPower);
 	}
 
-	// Causes the player to lose the current power-up
-	public void LosePower () {
-		if (power == Power.None) {
-			KillPlayer ();
-		} else {
-			switch (power) {
-			case Power.Mushroom:
-				SetSize (1);
-				break;
-			case Power.Coffee: 
-				baseMoveSpeed /= 2;
-				runSpeed /= 2;
-				break;
-			default:
-				break;
-			}
-			power = Power.None;
+	// Removes a power from the player.
+	public void LosePower (Power power) {
+		if (power != null) {
+			power.OnRemove ();
+			powers.Remove (power);
+			lostPowers++;
+			Destroy ((MonoBehaviour)power);
 		}
 	}
 
@@ -261,27 +264,26 @@ public class Player : MonoBehaviour {
 		return goalTick > 0;
 	}
 
-	// Resets the position of the player.
+	// Resets the player when the level restarts.
 	public void Reset () {
 		pathMovement.ResetPosition ();
+		body.useGravity = true;
+		body.velocity = Vector3.zero;
+		body.constraints = body.constraints & ~RigidbodyConstraints.FreezePositionY;
+		isGrounded = false;
 		score = 0;
-		if (power != Power.None) {
-			LosePower ();
+		jumpHeightTimer = 0;
+		foreach (Power power in powers) {
+			power.OnReset ();
+			Destroy ((MonoBehaviour)power);
 		}
+		powers.Clear ();
 		invincibleTimer = 0;
-		GetComponent<Renderer> ().enabled = true;
-		ToothpickPower toothpickPower = GetComponent<ToothpickPower> ();
-		if (toothpickPower) {
-			GameObject.Destroy (toothpickPower);
-		}
-		FlySwatterPower swatterPower = GetComponent<FlySwatterPower> ();
-		if (swatterPower) {
-			GameObject.Destroy (swatterPower);
-		}
-		Transform swatter = transform.FindChild ("FlySwatter(Clone)");
-		if (swatter) {
-			Destroy (swatter.gameObject);
-		}
+		playerRenderer.enabled = true;
 		canMove = true;
+		dead = false;
+		Color playerColor = playerRenderer.material.color;
+		playerColor.a = 1;
+		playerRenderer.material.color = playerColor;
 	}
 }

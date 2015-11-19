@@ -15,6 +15,7 @@ public class ToothpickItem : Item {
 		} else {
 			power = player.gameObject.AddComponent<ToothpickPower> ();
 			power.toothpickPrefab = toothpickPrefab;
+			player.AddPower (power);
 		}
 	}
 }

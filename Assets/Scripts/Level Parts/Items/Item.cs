@@ -69,7 +69,9 @@ public class Item : MonoBehaviour {
 			} else {
 				manager.items.Remove (this);
 			}
-			Destroy (gameObject);
+			if (this != null) {
+				Destroy (gameObject);
+			}
 		}
 	}
 

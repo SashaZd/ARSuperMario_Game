@@ -2,7 +2,7 @@
 using System.Collections;
 
 // Movement of entities.
-public interface IMovement {
+public interface Movement {
 	
 	// Resets the movement of the entity.
 	void Reset ();
