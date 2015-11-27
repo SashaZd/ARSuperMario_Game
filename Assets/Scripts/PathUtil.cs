@@ -88,6 +88,7 @@ public class PathUtil {
 			}
 		}
 		pathMovement.currentPath = closestPath;
+		pathMovement.startPath = closestPath;
 		pathMovement.pathProgress = PathUtil.ProjectionPointLine (position, closestPath.GetStart (), closestPath.GetEnd ()).x / closestPath.GetLength ().x;
 	}
 

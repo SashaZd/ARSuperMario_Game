@@ -110,6 +110,50 @@ public class LevelCreator : MonoBehaviour {
 			}
 		}
 
+		// Construct virtual platforms to represent the colliders.
+		for (int i = 0; i < fullPath.Capacity; i++) {
+			List<Vector3> platform = new List<Vector3> ();
+			Vector3 direction = pathInput[i + 1].position - pathInput[i].position;
+			Vector3 flatDirection = PathUtil.RemoveY (direction);
+			float thickness = 0.075f;
+			if (flatDirection == Vector3.zero) {
+				// Wall
+				if (i > 0) {
+					flatDirection = Vector3.Normalize (PathUtil.RemoveY (pathInput[i].position - pathInput[i - 1].position)) * thickness;
+					Vector3 directionRotate = new Vector3 (flatDirection.z, 0, -flatDirection.x);
+					Vector3 top = pathInput[i + 1].position.y > pathInput[i].position.y ? pathInput[i + 1].position : pathInput[i].position;
+					platform.Add (top + directionRotate);
+					platform.Add (top + directionRotate + flatDirection);
+					platform.Add (top - directionRotate + flatDirection);
+					platform.Add (top - directionRotate);
+					CreatePlatform (new PlatformInput (platform), Mathf.Abs (pathInput[i + 1].position.y - pathInput[i].position.y));
+				}
+			} else {
+				flatDirection = Vector3.Normalize (flatDirection);
+				Vector3 directionRotate = new Vector3 (flatDirection.z, 0, -flatDirection.x) * thickness;
+				if (flatDirection != direction) {
+					// Slope
+					platform.Add (pathInput[i + 1].position + directionRotate);
+					platform.Add (pathInput[i + 1].position - directionRotate);
+					platform.Add (pathInput[i + 1].position - directionRotate + flatDirection * 0.25f);
+					platform.Add (pathInput[i + 1].position + directionRotate + flatDirection * 0.25f);
+					List<Vector3> bottom = new List<Vector3> ();
+					bottom.Add (pathInput[i].position + directionRotate);
+					bottom.Add (pathInput[i].position - directionRotate);
+					bottom.Add (pathInput[i].position - directionRotate + flatDirection * 0.25f);
+					bottom.Add (pathInput[i].position + directionRotate + flatDirection * 0.25f);
+					CreatePlatform (new PlatformInput (platform), new PlatformInput (bottom));
+				} else {
+					// Floor
+					platform.Add (pathInput[i + 1].position + directionRotate);
+					platform.Add (pathInput[i + 1].position - directionRotate);
+					platform.Add (pathInput[i].position - directionRotate);
+					platform.Add (pathInput[i].position + directionRotate);
+					CreatePlatform (new PlatformInput (platform));
+				}
+			}
+		}
+
 		// Set the player on a path.
 		Player player = Instantiate (playerPrefab) as Player;
 		player.GetComponent<PathMovement> ().currentPath = fullPath[0];
@@ -129,8 +173,7 @@ public class LevelCreator : MonoBehaviour {
 		
 		// Create virtual platforms from the input.
 		foreach (PlatformInput input in platformInput) {
-			GameObject virtualPlatform = CreatePlatform (input);
-			virtualPlatform.transform.parent = levelManager.transform.FindChild ("Platforms").transform;
+			CreatePlatform (input);
 		}
 
 		// Create enemies from the input.
@@ -232,9 +275,18 @@ public class LevelCreator : MonoBehaviour {
 		path.transform.localScale = tempScale;
 		return path;
 	}
-
+	
 	// Creates a virtual platform from its top vertices.
-	GameObject CreatePlatform (PlatformInput input) {
+	GameObject CreatePlatform (PlatformInput input, float height = PLATFORMHEIGHT) {
+		List<Vector3> bottom = new List<Vector3> (input.vertices.Count);
+		for (int i = 0; i < input.vertices.Count; i++) {
+			bottom.Add (PathUtil.SetY(input.vertices[i], input.vertices[0].y - height));
+		}
+		return CreatePlatform (input, new PlatformInput (bottom));
+	}
+
+	// Creates a virtual platform from both top and bottom vertices.
+	GameObject CreatePlatform (PlatformInput top, PlatformInput bottom) {
 		GameObject virtualPlatform = new GameObject ();
 		virtualPlatform.name = "Virtual Platform";
 		virtualPlatform.AddComponent<MeshFilter> ();
@@ -243,42 +295,42 @@ public class LevelCreator : MonoBehaviour {
 		Mesh mesh = virtualPlatform.GetComponent<MeshFilter>().mesh;
 
 		// Create the vertices of the platform.
-		Vector3[] vertices =  new Vector3[input.vertices.Count * 2];
-		for (int i = 0; i < input.vertices.Count; i++) {
-			vertices[i] = input.vertices[i];
-			vertices[i + input.vertices.Count] = PathUtil.SetY(input.vertices[i], input.vertices[0].y - PLATFORMHEIGHT);
+		Vector3[] vertices =  new Vector3[top.vertices.Count * 2];
+		for (int i = 0; i < top.vertices.Count; i++) {
+			vertices[i] = top.vertices[i];
+			vertices[i + top.vertices.Count] = bottom.vertices[i];
 		}
 		mesh.vertices = vertices;
 
 		// Find the triangles that can make up the top and bottom faces of the platform mesh.
-		Triangulator triangulator = new Triangulator (input.vertices.ToArray ());
+		Triangulator triangulator = new Triangulator (top.vertices.ToArray ());
 		int[] topTriangles = triangulator.Triangulate ();
-		int[] triangles = new int[topTriangles.Length * 2 + input.vertices.Count * 6];
+		int[] triangles = new int[topTriangles.Length * 2 + top.vertices.Count * 6];
 		for (int i = 0; i < topTriangles.Length; i += 3) {
 			triangles[i] = topTriangles[i];
 			triangles[i + 1] = topTriangles[i + 1];
 			triangles[i + 2] = topTriangles[i + 2];
-			triangles[topTriangles.Length + i] = topTriangles[i + 2] + input.vertices.Count;
-			triangles[topTriangles.Length + i + 1] = topTriangles[i + 1] + input.vertices.Count;
-			triangles[topTriangles.Length + i + 2] = topTriangles[i] + input.vertices.Count;
+			triangles[topTriangles.Length + i] = topTriangles[i + 2] + top.vertices.Count;
+			triangles[topTriangles.Length + i + 1] = topTriangles[i + 1] + top.vertices.Count;
+			triangles[topTriangles.Length + i + 2] = topTriangles[i] + top.vertices.Count;
 		}
 
 		// Find the triangles for the sides of the platform.
-		for (int i = 0; i < input.vertices.Count; i++) {
+		for (int i = 0; i < top.vertices.Count; i++) {
 			int offset = topTriangles.Length * 2 + i * 6;
-			if (i < input.vertices.Count - 1) {
+			if (i < top.vertices.Count - 1) {
 				triangles[offset] = i;
 				triangles[offset + 1] = i + 1;
-				triangles[offset + 2] = input.vertices.Count + i;
-				triangles[offset + 3] = input.vertices.Count + i + 1;
-				triangles[offset + 4] = input.vertices.Count + i;
+				triangles[offset + 2] = top.vertices.Count + i;
+				triangles[offset + 3] = top.vertices.Count + i + 1;
+				triangles[offset + 4] = top.vertices.Count + i;
 				triangles[offset + 5] = i + 1;
 			} else {
 				triangles[offset] = i;
 				triangles[offset + 1] = 0;
-				triangles[offset + 2] = input.vertices.Count + i;
-				triangles[offset + 3] = input.vertices.Count;
-				triangles[offset + 4] = input.vertices.Count + i;
+				triangles[offset + 2] = top.vertices.Count + i;
+				triangles[offset + 3] = top.vertices.Count;
+				triangles[offset + 4] = top.vertices.Count + i;
 				triangles[offset + 5] = 0;
 			}
 		}
@@ -287,6 +339,9 @@ public class LevelCreator : MonoBehaviour {
 
 		virtualPlatform.AddComponent<MeshCollider> ();
 		virtualPlatform.GetComponent<MeshCollider> ().sharedMesh = mesh;
+		
+		virtualPlatform.transform.parent = LevelManager.GetInstance ().transform.FindChild ("Platforms").transform;
+		
 		return virtualPlatform;
 	}
 

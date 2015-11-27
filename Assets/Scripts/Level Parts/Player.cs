@@ -134,16 +134,18 @@ public class Player : MonoBehaviour {
 		}
 	}
 
-	// Marks the player as grounded.
-	public void OnTriggerEnter (Collider collider) {
-		if (isGround (collider.tag)) {
+	// Checks when the player collides with certain objects.
+	public void OnCollisionEnter (Collision collision) {
+		if (collision.collider.tag == "Finish") {
+			HitGoal ();
+		} else if (isGround (collision.collider.tag)) {
 			isGrounded = true;
 		}
 	}
 
 	// Marks the player as airborne.
-	public void OnTriggerExit (Collider collider) {
-		if (isGround (collider.tag)) {
+	public void OnCollisionExit (Collision collision) {
+		if (isGround (collision.collider.tag)) {
 			isGrounded = false;
 		}
 	}
@@ -155,14 +157,19 @@ public class Player : MonoBehaviour {
 
 	// Handles the player jumping.
 	void Jump (bool isJumping) {
-		// Varies the player's jump height.
+		// Varies the player's jump height based on movement speed and held jump button.
 		if (isJumping && jumpHeightTimer < baseMaxJumpTimer * pathMovement.moveSpeed / baseMoveSpeed) {
+			bool incremented = false;
 			if (isGrounded) {
 				jumpHeightTimer++;
 			}
-			if (jumpHeightTimer > 0 && body.velocity.y > -Mathf.Epsilon) {
+			if (jumpHeightTimer > 0 && body.velocity.y > -0.01f) {
 				body.velocity = PathUtil.SetY (body.velocity, jumpSpeed);
-				jumpHeightTimer++;
+				if (!incremented) {
+					jumpHeightTimer++;
+				}
+			} else {
+				jumpHeightTimer = 0;
 			}
 		} else {
 			jumpHeightTimer = 0;
@@ -201,13 +208,6 @@ public class Player : MonoBehaviour {
 		body.velocity = setVelocity;
 		jumpHeightTimer++;
 		score += 100;
-	}
-
-	// Triggers events when colliding with certain objects.
-	void OnCollisionEnter (Collision collision) {
-		if (collision.collider.tag == "Finish") {
-			HitGoal ();
-		}
 	}
 
 	// Plays an animation upon reaching the goal.

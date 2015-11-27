@@ -28,6 +28,11 @@ public struct PlatformInput {
 			vertices.Add (PathUtil.MakeVectorFromJSON (vertex));
 		}
 	}
+
+	public PlatformInput (List<Vector3> vertices) {
+		type = 1;
+		this.vertices = vertices;
+	}
 }
 
 // Used to add enemies into a level.

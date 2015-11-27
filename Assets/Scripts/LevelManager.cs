@@ -28,9 +28,6 @@ public class LevelManager : MonoBehaviour {
 			music.time = 9.118005f;
 			music.Play ();
 		}
-		if (enableTracking) {
-			float currentTime = Time.time;
-		}
 	}
 
 	// Gets the instance of the level manager.
