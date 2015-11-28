@@ -32,7 +32,7 @@ public class LevelCreator : MonoBehaviour {
 	public TextAsset json;
 
 	// The height of virtual platforms.
-	const float PLATFORMHEIGHT = 0.1f;
+	const float PLATFORMHEIGHT = 0.05f;
 
 	// Use this for initialization.
 	IEnumerator Start () {
@@ -129,19 +129,19 @@ public class LevelCreator : MonoBehaviour {
 					CreatePlatform (new PlatformInput (platform), Mathf.Abs (pathInput[i + 1].position.y - pathInput[i].position.y));
 				}
 			} else {
-				flatDirection = Vector3.Normalize (flatDirection);
-				Vector3 directionRotate = new Vector3 (flatDirection.z, 0, -flatDirection.x) * thickness;
+				Vector3 flatDirectionNorm = Vector3.Normalize (flatDirection);
+				Vector3 directionRotate = new Vector3 (flatDirectionNorm.z, 0, -flatDirectionNorm.x) * thickness;
 				if (flatDirection != direction) {
 					// Slope
-					platform.Add (pathInput[i + 1].position + directionRotate);
+					platform.Add (pathInput[i + 1].position + directionRotate + flatDirectionNorm * 0.25f);
+					platform.Add (pathInput[i + 1].position - directionRotate + flatDirectionNorm * 0.25f);
 					platform.Add (pathInput[i + 1].position - directionRotate);
-					platform.Add (pathInput[i + 1].position - directionRotate + flatDirection * 0.25f);
-					platform.Add (pathInput[i + 1].position + directionRotate + flatDirection * 0.25f);
+					platform.Add (pathInput[i + 1].position + directionRotate);
 					List<Vector3> bottom = new List<Vector3> ();
-					bottom.Add (pathInput[i].position + directionRotate);
+					bottom.Add (pathInput[i].position + directionRotate + flatDirectionNorm * 0.25f);
+					bottom.Add (pathInput[i].position - directionRotate + flatDirectionNorm * 0.25f);
 					bottom.Add (pathInput[i].position - directionRotate);
-					bottom.Add (pathInput[i].position - directionRotate + flatDirection * 0.25f);
-					bottom.Add (pathInput[i].position + directionRotate + flatDirection * 0.25f);
+					bottom.Add (pathInput[i].position + directionRotate);
 					CreatePlatform (new PlatformInput (platform), new PlatformInput (bottom));
 				} else {
 					// Floor
@@ -280,7 +280,7 @@ public class LevelCreator : MonoBehaviour {
 	GameObject CreatePlatform (PlatformInput input, float height = PLATFORMHEIGHT) {
 		List<Vector3> bottom = new List<Vector3> (input.vertices.Count);
 		for (int i = 0; i < input.vertices.Count; i++) {
-			bottom.Add (PathUtil.SetY(input.vertices[i], input.vertices[0].y - height));
+			bottom.Add (PathUtil.SetY(input.vertices[i], input.vertices[i].y - height));
 		}
 		return CreatePlatform (input, new PlatformInput (bottom));
 	}
@@ -295,7 +295,7 @@ public class LevelCreator : MonoBehaviour {
 		Mesh mesh = virtualPlatform.GetComponent<MeshFilter>().mesh;
 
 		// Create the vertices of the platform.
-		Vector3[] vertices =  new Vector3[top.vertices.Count * 2];
+		Vector3[] vertices = new Vector3[top.vertices.Count * 2];
 		for (int i = 0; i < top.vertices.Count; i++) {
 			vertices[i] = top.vertices[i];
 			vertices[i + top.vertices.Count] = bottom.vertices[i];
@@ -345,12 +345,12 @@ public class LevelCreator : MonoBehaviour {
 		return virtualPlatform;
 	}
 
-	/*
+
 	// Debug method used to print a mesh's triangles.
 	public void PrintMesh (Mesh mesh) {
+		print ("Mesh");
 		for (int i = 0; i < mesh.triangles.Length; i += 3) {
 			print (mesh.vertices[mesh.triangles[i]] + "" + mesh.vertices[mesh.triangles[i + 1]] + "" + mesh.vertices[mesh.triangles[i + 2]]);
 		}
 	}
-	*/
 }

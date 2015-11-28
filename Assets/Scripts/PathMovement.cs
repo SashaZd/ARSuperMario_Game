@@ -103,8 +103,21 @@ public class PathMovement : MonoBehaviour {
 		// Check for side collision.
 		Vector3 sidePosition = transform.position + Vector3.down * (groundOffset - COLLISIONOFFSET);
 		float sideIncrement = groundOffset * 2 / NUMSIDECHECKS + 2 * COLLISIONOFFSET;
-		for (int i = 0; i < NUMSIDECHECKS; i++) {
-			RaycastHit hit;
+		RaycastHit hit;
+		int loopStart = 1;
+		// Test for sloped ground.
+		if (Physics.Raycast (sidePosition, currentPath.GetDirection (forward), out hit, sideOffset + moveSpeed + COLLISIONOFFSET, collisionLayers)) {
+			float groundDistance = hit.distance;
+			sidePosition.y += sideIncrement;
+			loopStart++;
+			if (Physics.Raycast (sidePosition, currentPath.GetDirection (forward), out hit, sideOffset + moveSpeed + COLLISIONOFFSET, collisionLayers)) {
+				if (hit.distance <= groundDistance || Mathf.Atan (sideIncrement / (hit.distance - groundDistance)) > 30 * Mathf.Deg2Rad) {
+					return false;
+				}
+			}
+		}
+		// Test the rest of the vertical distance for blockage.
+		for (int i = loopStart; i < NUMSIDECHECKS; i++) {
 			if (Physics.Raycast (sidePosition, currentPath.GetDirection (forward), out hit, sideOffset + moveSpeed + COLLISIONOFFSET, collisionLayers)) {
 				moveDistance = Mathf.Min (moveDistance, hit.distance - sideOffset - COLLISIONOFFSET);
 				if (moveDistance < Mathf.Epsilon) {

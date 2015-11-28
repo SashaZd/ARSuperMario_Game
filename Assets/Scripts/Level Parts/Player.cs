@@ -29,7 +29,7 @@ public class Player : MonoBehaviour {
 	// Timer for varying the player's jump height.
 	int jumpHeightTimer = 0;
 	// Whether the player is on the ground and can jump.
-	bool isGrounded;
+	int groundCounter = 0;
 
 	// The amount of frames that the player will be invincible after being hit.
 	const int INVINCIBLEDELAY = 120;
@@ -139,14 +139,16 @@ public class Player : MonoBehaviour {
 		if (collision.collider.tag == "Finish") {
 			HitGoal ();
 		} else if (isGround (collision.collider.tag)) {
-			isGrounded = true;
+			groundCounter++;
 		}
 	}
 
 	// Marks the player as airborne.
 	public void OnCollisionExit (Collision collision) {
 		if (isGround (collision.collider.tag)) {
-			isGrounded = false;
+			if (groundCounter > 0) {
+				groundCounter--;
+			}
 		}
 	}
 
@@ -158,13 +160,14 @@ public class Player : MonoBehaviour {
 	// Handles the player jumping.
 	void Jump (bool isJumping) {
 		// Varies the player's jump height based on movement speed and held jump button.
-		if (isJumping && jumpHeightTimer < baseMaxJumpTimer * pathMovement.moveSpeed / baseMoveSpeed) {
+		if (isJumping && jumpHeightTimer < baseMaxJumpTimer * Mathf.Min (1.5f, baseMoveSpeed / pathMovement.moveSpeed)) {
 			bool incremented = false;
-			if (isGrounded) {
+			if (groundCounter > 0) {
 				jumpHeightTimer++;
 			}
 			if (jumpHeightTimer > 0 && body.velocity.y > -0.01f) {
 				body.velocity = PathUtil.SetY (body.velocity, jumpSpeed);
+				groundCounter = 0;
 				if (!incremented) {
 					jumpHeightTimer++;
 				}
@@ -270,7 +273,7 @@ public class Player : MonoBehaviour {
 		body.useGravity = true;
 		body.velocity = Vector3.zero;
 		body.constraints = body.constraints & ~RigidbodyConstraints.FreezePositionY;
-		isGrounded = false;
+		groundCounter = 0;
 		score = 0;
 		jumpHeightTimer = 0;
 		foreach (Power power in powers) {
