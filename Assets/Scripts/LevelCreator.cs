@@ -50,9 +50,13 @@ public class LevelCreator : MonoBehaviour {
 
 		// Parse the path from JSON.
 		JSONObject pathJSON = input.GetField ("route");
-		List<PathInput> pathInput = new List<PathInput> (pathJSON.list.Count);
-		foreach (JSONObject pathComponent in pathJSON.list) {
-			pathInput.Add (new PathInput (pathComponent));
+		List<List<PathInput>> pathInput = new List<List<PathInput>> (pathJSON.list.Count);
+		foreach (JSONObject surface in pathJSON.list) {
+			List<PathInput> surfaceList = new List<PathInput> (surface.list.Count);
+			foreach (JSONObject pathComponent in surface.list) {
+				surfaceList.Add (new PathInput (pathComponent));
+			}
+			pathInput.Add (surfaceList);
 		}
 
 		// Parse platforms from JSON.
@@ -92,14 +96,62 @@ public class LevelCreator : MonoBehaviour {
 	}
 
 	// Creates a level from the given input.
-	public void CreateLevel (List<PathInput> pathInput, List<PlatformInput> platformInput, List<EnemyInput> enemyInput, List<CollectibleInput> collectibleInput, List<BlockInput> blockInput) {
+	public void CreateLevel (List<List<PathInput>> pathInput, List<PlatformInput> platformInput, List<EnemyInput> enemyInput, List<CollectibleInput> collectibleInput, List<BlockInput> blockInput) {
 		LevelManager levelManager = LevelManager.GetInstance ();
-		
+
+		List<PathInput> singlePath = new List<PathInput> ();
+		// Construct virtual platforms to represent the colliders.
+		foreach (List<PathInput> surface in pathInput) {
+			singlePath.AddRange (surface);
+			for (int i = 0; i < surface.Count - 1; i++) {
+				List<Vector3> platform = new List<Vector3> ();
+				Vector3 direction = surface [i + 1].position - surface [i].position;
+				Vector3 flatDirection = PathUtil.RemoveY (direction);
+				float thickness = 0.075f;
+				if (flatDirection == Vector3.zero) {
+					// Wall
+					if (i > 0) {
+						flatDirection = Vector3.Normalize (PathUtil.RemoveY (surface [i].position - surface [i - 1].position)) * thickness;
+						Vector3 directionRotate = new Vector3 (flatDirection.z, 0, -flatDirection.x);
+						Vector3 top = surface [i + 1].position.y > surface [i].position.y ? surface [i + 1].position : surface [i].position;
+						platform.Add (top + directionRotate);
+						platform.Add (top + directionRotate + flatDirection);
+						platform.Add (top - directionRotate + flatDirection);
+						platform.Add (top - directionRotate);
+						CreatePlatform (new PlatformInput (platform), Mathf.Abs (surface [i + 1].position.y - surface [i].position.y), true);
+					}
+				} else {
+					Vector3 flatDirectionNorm = Vector3.Normalize (flatDirection);
+					Vector3 directionRotate = new Vector3 (flatDirectionNorm.z, 0, -flatDirectionNorm.x) * thickness;
+					if (flatDirection != direction) {
+						// Slope
+						platform.Add (surface [i + 1].position + directionRotate + flatDirectionNorm * 0.25f);
+						platform.Add (surface [i + 1].position - directionRotate + flatDirectionNorm * 0.25f);
+						platform.Add (surface [i + 1].position - directionRotate);
+						platform.Add (surface [i + 1].position + directionRotate);
+						List<Vector3> bottom = new List<Vector3> ();
+						bottom.Add (surface [i].position + directionRotate + flatDirectionNorm * 0.25f);
+						bottom.Add (surface [i].position - directionRotate + flatDirectionNorm * 0.25f);
+						bottom.Add (surface [i].position - directionRotate);
+						bottom.Add (surface [i].position + directionRotate);
+						CreatePlatform (new PlatformInput (platform), new PlatformInput (bottom), true);
+					} else {
+						// Floor
+						platform.Add (surface [i + 1].position + directionRotate);
+						platform.Add (surface [i + 1].position - directionRotate);
+						platform.Add (surface [i].position - directionRotate);
+						platform.Add (surface [i].position + directionRotate);
+						CreatePlatform (new PlatformInput (platform), PLATFORMHEIGHT, true);
+					}
+				}
+			}
+		}
+
 		// Construct the path from the input points.
-		List<PathComponent> fullPath = new List<PathComponent>(pathInput.Count - 1);
+		List<PathComponent> fullPath = new List<PathComponent>(singlePath.Count - 1);
 		for (int i = 0; i < fullPath.Capacity; i++) {
 			// Make and position the path component.
-			PathComponent pathComponent = CreatePath (pathInput[i], pathInput[i + 1]);
+			PathComponent pathComponent = CreatePath (singlePath[i], singlePath[i + 1]);
 			fullPath.Add (pathComponent);
 			pathComponent.lineMaterial = lineMaterial;
 
@@ -107,50 +159,6 @@ public class LevelCreator : MonoBehaviour {
 			if (i > 0) {
 				pathComponent.previousPath = fullPath[i - 1];
 				fullPath[i - 1].nextPath = pathComponent;
-			}
-		}
-
-		// Construct virtual platforms to represent the colliders.
-		for (int i = 0; i < fullPath.Capacity; i++) {
-			List<Vector3> platform = new List<Vector3> ();
-			Vector3 direction = pathInput[i + 1].position - pathInput[i].position;
-			Vector3 flatDirection = PathUtil.RemoveY (direction);
-			float thickness = 0.075f;
-			if (flatDirection == Vector3.zero) {
-				// Wall
-				if (i > 0) {
-					flatDirection = Vector3.Normalize (PathUtil.RemoveY (pathInput[i].position - pathInput[i - 1].position)) * thickness;
-					Vector3 directionRotate = new Vector3 (flatDirection.z, 0, -flatDirection.x);
-					Vector3 top = pathInput[i + 1].position.y > pathInput[i].position.y ? pathInput[i + 1].position : pathInput[i].position;
-					platform.Add (top + directionRotate);
-					platform.Add (top + directionRotate + flatDirection);
-					platform.Add (top - directionRotate + flatDirection);
-					platform.Add (top - directionRotate);
-					CreatePlatform (new PlatformInput (platform), Mathf.Abs (pathInput[i + 1].position.y - pathInput[i].position.y), true);
-				}
-			} else {
-				Vector3 flatDirectionNorm = Vector3.Normalize (flatDirection);
-				Vector3 directionRotate = new Vector3 (flatDirectionNorm.z, 0, -flatDirectionNorm.x) * thickness;
-				if (flatDirection != direction) {
-					// Slope
-					platform.Add (pathInput[i + 1].position + directionRotate + flatDirectionNorm * 0.25f);
-					platform.Add (pathInput[i + 1].position - directionRotate + flatDirectionNorm * 0.25f);
-					platform.Add (pathInput[i + 1].position - directionRotate);
-					platform.Add (pathInput[i + 1].position + directionRotate);
-					List<Vector3> bottom = new List<Vector3> ();
-					bottom.Add (pathInput[i].position + directionRotate + flatDirectionNorm * 0.25f);
-					bottom.Add (pathInput[i].position - directionRotate + flatDirectionNorm * 0.25f);
-					bottom.Add (pathInput[i].position - directionRotate);
-					bottom.Add (pathInput[i].position + directionRotate);
-					CreatePlatform (new PlatformInput (platform), new PlatformInput (bottom), true);
-				} else {
-					// Floor
-					platform.Add (pathInput[i + 1].position + directionRotate);
-					platform.Add (pathInput[i + 1].position - directionRotate);
-					platform.Add (pathInput[i].position - directionRotate);
-					platform.Add (pathInput[i].position + directionRotate);
-					CreatePlatform (new PlatformInput (platform), PLATFORMHEIGHT, true);
-				}
 			}
 		}
 
