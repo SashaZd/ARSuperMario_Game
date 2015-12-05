@@ -126,7 +126,7 @@ public class LevelCreator : MonoBehaviour {
 					platform.Add (top + directionRotate + flatDirection);
 					platform.Add (top - directionRotate + flatDirection);
 					platform.Add (top - directionRotate);
-					CreatePlatform (new PlatformInput (platform), Mathf.Abs (pathInput[i + 1].position.y - pathInput[i].position.y));
+					CreatePlatform (new PlatformInput (platform), Mathf.Abs (pathInput[i + 1].position.y - pathInput[i].position.y), true);
 				}
 			} else {
 				Vector3 flatDirectionNorm = Vector3.Normalize (flatDirection);
@@ -142,14 +142,14 @@ public class LevelCreator : MonoBehaviour {
 					bottom.Add (pathInput[i].position - directionRotate + flatDirectionNorm * 0.25f);
 					bottom.Add (pathInput[i].position - directionRotate);
 					bottom.Add (pathInput[i].position + directionRotate);
-					CreatePlatform (new PlatformInput (platform), new PlatformInput (bottom));
+					CreatePlatform (new PlatformInput (platform), new PlatformInput (bottom), true);
 				} else {
 					// Floor
 					platform.Add (pathInput[i + 1].position + directionRotate);
 					platform.Add (pathInput[i + 1].position - directionRotate);
 					platform.Add (pathInput[i].position - directionRotate);
 					platform.Add (pathInput[i].position + directionRotate);
-					CreatePlatform (new PlatformInput (platform));
+					CreatePlatform (new PlatformInput (platform), PLATFORMHEIGHT, true);
 				}
 			}
 		}
@@ -277,18 +277,18 @@ public class LevelCreator : MonoBehaviour {
 	}
 	
 	// Creates a virtual platform from its top vertices.
-	GameObject CreatePlatform (PlatformInput input, float height = PLATFORMHEIGHT) {
+	GameObject CreatePlatform (PlatformInput input, float height = PLATFORMHEIGHT, bool hidden = false) {
 		List<Vector3> bottom = new List<Vector3> (input.vertices.Count);
 		for (int i = 0; i < input.vertices.Count; i++) {
 			bottom.Add (PathUtil.SetY(input.vertices[i], input.vertices[i].y - height));
 		}
-		return CreatePlatform (input, new PlatformInput (bottom));
+		return CreatePlatform (input, new PlatformInput (bottom), hidden);
 	}
 
 	// Creates a virtual platform from both top and bottom vertices.
-	GameObject CreatePlatform (PlatformInput top, PlatformInput bottom) {
+	GameObject CreatePlatform (PlatformInput top, PlatformInput bottom, bool hidden = false) {
 		GameObject virtualPlatform = new GameObject ();
-		virtualPlatform.name = "Virtual Platform";
+		virtualPlatform.name = hidden ? "Collider" : "Virtual Platform";
 		virtualPlatform.AddComponent<MeshFilter> ();
 		virtualPlatform.AddComponent<MeshRenderer> ();
 		virtualPlatform.GetComponent<Renderer> ().material = virtualPlatformMaterial;

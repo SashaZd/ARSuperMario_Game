@@ -6,28 +6,12 @@ public class LevelManager : MonoBehaviour {
 
 	// Singleton object.
 	private static LevelManager instance;
-	// The audio source playing the background music.
-	AudioSource music;
 	// Whether player tracking is enabled.
 	public bool enableTracking = true;
 
 	// Sets the level manager instance.
 	void Awake () {
 		instance = this;
-	}
-
-	// Use this for initialization.
-	void Start () {
-		music = GetComponent<AudioSource> ();
-	}
-
-	// Update is called once per frame.
-	void Update () {
-		// Handles looping of background music.
-		if (music.time >= 77.068817f) {
-			music.time = 9.118005f;
-			music.Play ();
-		}
 	}
 
 	// Gets the instance of the level manager.
