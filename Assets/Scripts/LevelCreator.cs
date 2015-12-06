@@ -45,7 +45,7 @@ public class LevelCreator : MonoBehaviour {
 
 		//Hard-coded JSON resource for testing.
 		if (json != null) {
-			input = new JSONObject (json.text);
+			//input = new JSONObject (json.text);
 		}
 
 		// Parse the path from JSON.
@@ -115,7 +115,7 @@ public class LevelCreator : MonoBehaviour {
 			List<Vector3> platform = new List<Vector3> ();
 			Vector3 direction = pathInput[i + 1].position - pathInput[i].position;
 			Vector3 flatDirection = PathUtil.RemoveY (direction);
-			float thickness = 0.075f;
+			float thickness = 0.025f;
 			if (flatDirection == Vector3.zero) {
 				// Wall
 				if (i > 0) {
@@ -133,16 +133,20 @@ public class LevelCreator : MonoBehaviour {
 				Vector3 directionRotate = new Vector3 (flatDirectionNorm.z, 0, -flatDirectionNorm.x) * thickness;
 				if (flatDirection != direction) {
 					// Slope
-					platform.Add (pathInput[i + 1].position + directionRotate + flatDirectionNorm * 0.25f);
-					platform.Add (pathInput[i + 1].position - directionRotate + flatDirectionNorm * 0.25f);
+					platform.Add (pathInput[i + 1].position + directionRotate + flatDirectionNorm * thickness * 2);
+					platform.Add (pathInput[i + 1].position - directionRotate + flatDirectionNorm * thickness * 2);
 					platform.Add (pathInput[i + 1].position - directionRotate);
 					platform.Add (pathInput[i + 1].position + directionRotate);
 					List<Vector3> bottom = new List<Vector3> ();
-					bottom.Add (pathInput[i].position + directionRotate + flatDirectionNorm * 0.25f);
-					bottom.Add (pathInput[i].position - directionRotate + flatDirectionNorm * 0.25f);
+					bottom.Add (pathInput[i].position + directionRotate + flatDirectionNorm * thickness * 2);
+					bottom.Add (pathInput[i].position - directionRotate + flatDirectionNorm * thickness * 2);
 					bottom.Add (pathInput[i].position - directionRotate);
 					bottom.Add (pathInput[i].position + directionRotate);
-					CreatePlatform (new PlatformInput (platform), new PlatformInput (bottom), true);
+					if (platform[0].y > bottom[0].y) {
+						CreatePlatform (new PlatformInput (platform), new PlatformInput (bottom), true);
+					} else {
+						CreatePlatform (new PlatformInput (bottom), new PlatformInput (platform), true);
+					}
 				} else {
 					// Floor
 					platform.Add (pathInput[i + 1].position + directionRotate);
@@ -296,11 +300,20 @@ public class LevelCreator : MonoBehaviour {
 
 		// Create the vertices of the platform.
 		Vector3[] vertices = new Vector3[top.vertices.Count * 2];
+
+		// Used to determine clockwise/counter-clockwise.
+		float edgeSum = 0;
 		for (int i = 0; i < top.vertices.Count; i++) {
 			vertices[i] = top.vertices[i];
 			vertices[i + top.vertices.Count] = bottom.vertices[i];
+			if (i < top.vertices.Count - 1) {
+				edgeSum += (top.vertices[i + 1].x - top.vertices[i].x) * (top.vertices[i + 1].z + top.vertices[i].z);
+			} else {
+				edgeSum += (top.vertices[0].x - top.vertices[i].x) * (top.vertices[0].z + top.vertices[i].z);
+			}
 		}
 		mesh.vertices = vertices;
+		bool clockwise = edgeSum > 0;
 
 		// Find the triangles that can make up the top and bottom faces of the platform mesh.
 		Triangulator triangulator = new Triangulator (top.vertices.ToArray ());
@@ -318,20 +331,21 @@ public class LevelCreator : MonoBehaviour {
 		// Find the triangles for the sides of the platform.
 		for (int i = 0; i < top.vertices.Count; i++) {
 			int offset = topTriangles.Length * 2 + i * 6;
-			if (i < top.vertices.Count - 1) {
+			int nextIndex = i < top.vertices.Count - 1 ? i + 1 : 0;
+			if (!clockwise) {
 				triangles[offset] = i;
-				triangles[offset + 1] = i + 1;
+				triangles[offset + 1] = nextIndex;
 				triangles[offset + 2] = top.vertices.Count + i;
-				triangles[offset + 3] = top.vertices.Count + i + 1;
+				triangles[offset + 3] = top.vertices.Count + nextIndex;
 				triangles[offset + 4] = top.vertices.Count + i;
-				triangles[offset + 5] = i + 1;
+				triangles[offset + 5] = nextIndex;
 			} else {
-				triangles[offset] = i;
-				triangles[offset + 1] = 0;
-				triangles[offset + 2] = top.vertices.Count + i;
-				triangles[offset + 3] = top.vertices.Count;
-				triangles[offset + 4] = top.vertices.Count + i;
-				triangles[offset + 5] = 0;
+				triangles[offset + 5] = i;
+				triangles[offset + 4] = nextIndex;
+				triangles[offset + 3] = top.vertices.Count + i;
+				triangles[offset + 2] = top.vertices.Count + nextIndex;
+				triangles[offset + 1] = top.vertices.Count + i;
+				triangles[offset] = nextIndex;
 			}
 		}
 
