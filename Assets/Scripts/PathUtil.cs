@@ -7,7 +7,7 @@ public class PathUtil {
 	// The height of the ceiling in the level. Used to draw the ribbon path.
 	public static float ceilingHeight = 10;
 	// The height of the floor. Kills anything that falls on it.
-	public static float floorHeight = 0.1f;
+	public static float floorHeight = -10;
 
 	// Sets the x and z components of a transform's position while leaving the y component unmodified.
 	public static void SetXZ (Transform target, Vector3 newPosition) {
@@ -112,6 +112,7 @@ public class PathUtil {
 
 	// Makes a vector from a size 3 JSON array.
 	public static Vector3 MakeVectorFromJSON (JSONObject json) {
-		return new Vector3 (json.list [0].n, json.list [1].n, json.list [2].n);
+		Vector3 returnVector = new Vector3 (json.list [0].n, json.list [1].n, json.list [2].n);
+		return returnVector * LevelManager.GetInstance ().scaleMultiplier;
 	}
 }

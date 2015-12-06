@@ -53,6 +53,9 @@ public class Player : MonoBehaviour {
 	// The current scale of the player.
 	int size = 1;
 
+	// The non-trigger collider on the player/
+	Collider physicsCollider;
+
 	// Use this for initialization.
 	void Start () {
 		pathMovement = GetComponent<PathMovement> ();
@@ -66,6 +69,16 @@ public class Player : MonoBehaviour {
 			runSpeed = baseMoveSpeed * 1.5f;
 		}
 		speedIncrement = (runSpeed - baseMoveSpeed) / 30f;
+		// Get the non-trigger collider on the player.
+		foreach (Collider collider in GetComponents<Collider> ()) {
+			if (!collider.isTrigger) {
+				physicsCollider = collider;
+				break;
+			}
+		}
+
+		Cursor.lockState = CursorLockMode.Locked;
+		Cursor.visible = false;
 	}
 
 	// Update is called once per frame.
@@ -138,14 +151,19 @@ public class Player : MonoBehaviour {
 	public void OnCollisionEnter (Collision collision) {
 		if (collision.collider.tag == "Finish") {
 			HitGoal ();
-		} else if (isGround (collision.collider.tag)) {
+		}
+	}
+
+	// Marks the player as grounded.
+	public void OnTriggerEnter (Collider collider) {
+		if (isGround (collider.tag)) {
 			groundCounter++;
 		}
 	}
 
 	// Marks the player as airborne.
-	public void OnCollisionExit (Collision collision) {
-		if (isGround (collision.collider.tag)) {
+	public void OnTriggerExit (Collider collider) {
+		if (isGround (collider.tag)) {
 			if (groundCounter > 0) {
 				groundCounter--;
 			}
@@ -224,7 +242,8 @@ public class Player : MonoBehaviour {
 	public void SetSize (int newSize) {
 		float ratio = (float)newSize / (float)size;
 		PathUtil.ScaleY (transform, ratio);
-		PathUtil.SetY (transform, transform.position.y + GetComponent<Collider> ().bounds.extents.y * Mathf.Log (ratio, 2) * 2.01f);
+		// Adjust the position of the player so that the lower bound is still at the same height.
+		PathUtil.SetY (transform, transform.position.y + physicsCollider.bounds.extents.y * Mathf.Log (ratio, 2) * 1.01f);
 		size = newSize;
 		pathMovement.UpdateGroundOffset ();
 	}

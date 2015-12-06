@@ -78,9 +78,13 @@ public class Item : MonoBehaviour {
 	// Removes the item if the level is reset.
 	public void Reset () {
 		if (hasInit) {
-			gameObject.SetActive (true);
 			transform.rotation = Quaternion.identity;
 			transform.position = initPosition;
+			gameObject.SetActive (true);
+			Movement movement = GetComponent<Movement> ();
+			if (movement != null) {
+				movement.Reset ();
+			}
 		} else {
 			Remove ();
 		}

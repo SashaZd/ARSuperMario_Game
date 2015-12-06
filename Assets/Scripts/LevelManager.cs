@@ -8,6 +8,8 @@ public class LevelManager : MonoBehaviour {
 	private static LevelManager instance;
 	// Whether player tracking is enabled.
 	public bool enableTracking = true;
+	// The scale multiplier for the level's size.
+	public float scaleMultiplier = 1;
 
 	// Sets the level manager instance.
 	void Awake () {

@@ -22,7 +22,7 @@ public class PathComponent : MonoBehaviour {
 	public PathComponent previousPath;
 
 	// The length of individual segments of the rendered line.
-	const float LINELENGTH = 0.5f;
+	const float LINELENGTH = 0.1f;
 	// The thickness of the rendered line.
 	const float LINETHICKNESS = 0.05f;
 	// The material to draw the line with.
