@@ -150,13 +150,13 @@ public class LevelCreator : MonoBehaviour {
 					Vector3 directionRotate = new Vector3 (flatDirectionNorm.z, 0, -flatDirectionNorm.x) * thickness;
 					if (flatDirection != direction) {
 						// Slope
-						platform.Add (surface [i + 1].position + directionRotate + thickness * 2);
-						platform.Add (surface [i + 1].position - directionRotate + thickness * 2);
+						platform.Add (surface [i + 1].position + directionRotate * thickness * 2);
+						platform.Add (surface [i + 1].position - directionRotate * thickness * 2);
 						platform.Add (surface [i + 1].position - directionRotate);
 						platform.Add (surface [i + 1].position + directionRotate);
 						List<Vector3> bottom = new List<Vector3> ();
-						bottom.Add (surface [i].position + directionRotate + thickness * 2);
-						bottom.Add (surface [i].position - directionRotate + thickness * 2);
+						bottom.Add (surface [i].position + directionRotate * thickness * 2);
+						bottom.Add (surface [i].position - directionRotate * thickness * 2);
 						bottom.Add (surface [i].position - directionRotate);
 						bottom.Add (surface [i].position + directionRotate);
 						CreatePlatform (new PlatformInput (platform), new PlatformInput (bottom), true);
