@@ -59,9 +59,14 @@ public class LevelCreator : MonoBehaviour {
 
 		// Parse platforms from JSON.
 		JSONObject platformJSON = input.GetField ("virtual_platform");
-		List<PlatformInput> platformInput = new List<PlatformInput> (platformJSON.list.Count);
-		foreach (JSONObject platform in platformJSON.list) {
-			platformInput.Add (new PlatformInput (platform));
+		List<PlatformInput> platformInput;
+		if (platformJSON == null) {
+			platformInput = new List<PlatformInput> (0);
+		} else {
+			platformInput = new List<PlatformInput> (platformJSON.list.Count);
+			foreach (JSONObject platform in platformJSON.list) {
+				platformInput.Add (new PlatformInput (platform));
+			}
 		}
 		if (surfaceFile != null) {
 			JSONObject surfaceJSON = new JSONObject (surfaceFile.text);
@@ -74,16 +79,26 @@ public class LevelCreator : MonoBehaviour {
 
 		// Parse enemies from JSON.
 		JSONObject enemyJSON = input.GetField ("enemies");
-		List<EnemyInput> enemyInput = new List<EnemyInput> (enemyJSON.list.Count);
-		foreach (JSONObject enemy in enemyJSON.list) {
-			enemyInput.Add (new EnemyInput (enemy));
+		List<EnemyInput> enemyInput;
+		if (enemyJSON == null) {
+			enemyInput = new List<EnemyInput> (0);
+		} else {
+			enemyInput = new List<EnemyInput> (enemyJSON.list.Count);
+			foreach (JSONObject enemy in enemyJSON.list) {
+				enemyInput.Add (new EnemyInput (enemy));
+			}
 		}
 
 		// Parse collectibles from JSON.
 		JSONObject collectibleJSON = input.GetField ("collectibles");
-		List<CollectibleInput> collectibleInput = new List<CollectibleInput> (collectibleJSON.list.Count);
-		foreach (JSONObject collectible in collectibleJSON.list) {
-			collectibleInput.Add (new CollectibleInput(collectible));
+		List<CollectibleInput> collectibleInput;
+		if (collectibleJSON == null) {
+			collectibleInput = new List<CollectibleInput> (0);
+		} else {
+			collectibleInput = new List<CollectibleInput> (collectibleJSON.list.Count);
+			foreach (JSONObject collectible in collectibleJSON.list) {
+				collectibleInput.Add (new CollectibleInput (collectible));
+			}
 		}
 
 		// Parse blocks from JSON.
@@ -121,7 +136,7 @@ public class LevelCreator : MonoBehaviour {
 		}
 
 		// Construct virtual platforms to represent the colliders.
-		for (int i = 0; i < 0/*fullPath.Capacity*/; i++) {
+		for (int i = 0; i < fullPath.Capacity; i++) {
 			List<Vector3> platform = new List<Vector3> ();
 			Vector3 direction = pathInput[i + 1].position - pathInput[i].position;
 			Vector3 flatDirection = PathUtil.RemoveY (direction);
