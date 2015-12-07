@@ -7,7 +7,7 @@ public class PathUtil {
 	// The height of the ceiling in the level. Used to draw the ribbon path.
 	public static float ceilingHeight = 10;
 	// The height of the floor. Kills anything that falls on it.
-	public static float floorHeight = -10;
+	public static float floorHeight = -0.05f;
 
 	// Sets the x and z components of a transform's position while leaving the y component unmodified.
 	public static void SetXZ (Transform target, Vector3 newPosition) {

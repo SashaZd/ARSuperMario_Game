@@ -157,20 +157,21 @@ public class PathComponent : MonoBehaviour {
 			RaycastHit hit;
 			Vector3 lineCenter = (lineStart + lineEnd) / 2;
 			lineCenter.y = PathUtil.ceilingHeight;
-			Physics.Raycast (lineCenter, Vector3.down, out hit, PathUtil.ceilingHeight * 1.1f);
-			lineStart.y = hit.point.y;
-			lineEnd.y = hit.point.y;
+			if (Physics.Raycast (lineCenter, Vector3.down, out hit, PathUtil.ceilingHeight * 1.1f, ~(1 << 11))) {
+				lineStart.y = hit.point.y;
+				lineEnd.y = hit.point.y;
 
-			// Draw the segment.
-			LineRenderer line = new GameObject().AddComponent<LineRenderer> () as LineRenderer;
-			line.gameObject.name = "LineRenderer";
-			line.material = lineMaterial;
-			line.transform.parent = transform;
-			line.SetWidth(LINETHICKNESS, LINETHICKNESS);
-			line.SetVertexCount(2);
+				// Draw the segment.
+				LineRenderer line = new GameObject().AddComponent<LineRenderer> () as LineRenderer;
+				line.gameObject.name = "LineRenderer";
+				line.material = lineMaterial;
+				line.transform.parent = transform;
+				line.SetWidth(LINETHICKNESS, LINETHICKNESS);
+				line.SetVertexCount(2);
 
-			line.SetPosition(0, lineStart);
-			line.SetPosition(1, lineEnd);
+				line.SetPosition(0, lineStart);
+				line.SetPosition(1, lineEnd);
+			}
 		}
 	}
 

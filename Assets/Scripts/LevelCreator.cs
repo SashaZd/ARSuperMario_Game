@@ -30,6 +30,8 @@ public class LevelCreator : MonoBehaviour {
 	public string url = "http://127.0.0.1:8000";
 	// Hard-coded JSON asset for now.
 	public TextAsset json;
+	// Hard-coded surfaces for now.
+	public TextAsset surfaceFile;
 
 	// The height of virtual platforms.
 	const float PLATFORMHEIGHT = 0.05f;
@@ -45,7 +47,7 @@ public class LevelCreator : MonoBehaviour {
 
 		//Hard-coded JSON resource for testing.
 		if (json != null) {
-			//input = new JSONObject (json.text);
+			input = new JSONObject (json.text);
 		}
 
 		// Parse the path from JSON.
@@ -60,6 +62,14 @@ public class LevelCreator : MonoBehaviour {
 		List<PlatformInput> platformInput = new List<PlatformInput> (platformJSON.list.Count);
 		foreach (JSONObject platform in platformJSON.list) {
 			platformInput.Add (new PlatformInput (platform));
+		}
+		if (surfaceFile != null) {
+			JSONObject surfaceJSON = new JSONObject (surfaceFile.text);
+			foreach (JSONObject surface in surfaceJSON.list) {
+				foreach (JSONObject triangle in surface.list) {
+					platformInput.Add (new PlatformInput (triangle));
+				}
+			}
 		}
 
 		// Parse enemies from JSON.
@@ -111,7 +121,7 @@ public class LevelCreator : MonoBehaviour {
 		}
 
 		// Construct virtual platforms to represent the colliders.
-		for (int i = 0; i < fullPath.Capacity; i++) {
+		for (int i = 0; i < 0/*fullPath.Capacity*/; i++) {
 			List<Vector3> platform = new List<Vector3> ();
 			Vector3 direction = pathInput[i + 1].position - pathInput[i].position;
 			Vector3 flatDirection = PathUtil.RemoveY (direction);
@@ -172,8 +182,11 @@ public class LevelCreator : MonoBehaviour {
 		goal.transform.parent = levelManager.transform.FindChild ("Platforms").transform;
 		Vector3 pathEnd = fullPath[fullPath.Count - 1].GetEnd () + Vector3.up * 0.05f;
 		RaycastHit hit;
-		Physics.Raycast (pathEnd, Vector3.down, out hit, PathUtil.ceilingHeight * 1.1f);
-		goal.transform.position = hit.point + Vector3.up * 0.025f;
+		if (Physics.Raycast (pathEnd, Vector3.down, out hit, PathUtil.ceilingHeight * 1.1f)) {
+			goal.transform.position = hit.point + Vector3.up * 0.025f;
+		} else {
+			goal.transform.position = fullPath[fullPath.Count - 1].GetEnd ();
+		}
 		
 		// Create virtual platforms from the input.
 		foreach (PlatformInput input in platformInput) {

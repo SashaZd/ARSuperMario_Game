@@ -23,9 +23,16 @@ public struct PlatformInput {
 
 	public PlatformInput (JSONObject json) {
 		vertices = new List<Vector3> ();
-		type = (int) json.GetField ("platform_type").n;
-		foreach (JSONObject vertex in json.GetField ("platform_points").list) {
-			vertices.Add (PathUtil.MakeVectorFromJSON (vertex));
+		if (json.HasField ("platform_type")) {
+			type = (int) json.GetField ("platform_type").n;
+			foreach (JSONObject vertex in json.GetField ("platform_points").list) {
+				vertices.Add (PathUtil.MakeVectorFromJSON (vertex));
+			}
+		} else {
+			type = 1;
+			foreach (JSONObject vertex in json.list) {
+				vertices.Add (PathUtil.MakeVectorFromJSON (vertex));
+			}
 		}
 	}
 
