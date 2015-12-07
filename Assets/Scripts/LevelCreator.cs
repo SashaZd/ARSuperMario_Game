@@ -45,7 +45,7 @@ public class LevelCreator : MonoBehaviour {
 		// Requires the back-end server to be set up.
 		JSONObject input = new JSONObject (www.text);
 
-		//Hard-coded JSON resource for testing.
+		// Hard-coded JSON resource for testing.
 		if (json != null) {
 			input = new JSONObject (json.text);
 		}
@@ -68,11 +68,18 @@ public class LevelCreator : MonoBehaviour {
 				platformInput.Add (new PlatformInput (platform));
 			}
 		}
+		// Hard-coded surfaces for testing.
 		if (surfaceFile != null) {
 			JSONObject surfaceJSON = new JSONObject (surfaceFile.text);
-			foreach (JSONObject surface in surfaceJSON.list) {
-				foreach (JSONObject triangle in surface.list) {
-					platformInput.Add (new PlatformInput (triangle));
+			if (surfaceJSON.HasField ("surfaces")) {
+				foreach (JSONObject surface in surfaceJSON.GetField ("surfaces").list) {
+					platformInput.Add (new PlatformInput (surface));
+				}
+			} else {
+				foreach (JSONObject surface in surfaceJSON.list) {
+					foreach (JSONObject triangle in surface.list) {
+						platformInput.Add (new PlatformInput (triangle));
+					}
 				}
 			}
 		}
