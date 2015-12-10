@@ -52,6 +52,10 @@ public class LevelCreator : MonoBehaviour {
 
 		// Parse the path from JSON.
 		JSONObject pathJSON = input.GetField ("route");
+		if (pathJSON == null) {
+			print ("Failed to load JSON file.");
+			return false;
+		}
 		List<PathInput> pathInput = new List<PathInput> (pathJSON.list.Count);
 		foreach (JSONObject pathComponent in pathJSON.list) {
 			pathInput.Add (new PathInput (pathComponent));
