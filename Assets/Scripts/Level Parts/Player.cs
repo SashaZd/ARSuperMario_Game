@@ -53,7 +53,7 @@ public class Player : MonoBehaviour {
 	// The current scale of the player.
 	int size = 1;
 
-	// The non-trigger collider on the player/
+	// The non-trigger collider on the player.
 	Collider physicsCollider;
 
 	// Use this for initialization.
@@ -236,6 +236,7 @@ public class Player : MonoBehaviour {
 		body.useGravity = false;
 		body.velocity = Vector3.up * jumpSpeed;
 		goalTick = 1;
+		physicsCollider.enabled = false;
 	}
 
 	// Sets the size of the player.
@@ -307,5 +308,6 @@ public class Player : MonoBehaviour {
 		Color playerColor = playerRenderer.material.color;
 		playerColor.a = 1;
 		playerRenderer.material.color = playerColor;
+		physicsCollider.enabled = true;
 	}
 }
