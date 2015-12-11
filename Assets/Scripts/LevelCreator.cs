@@ -53,8 +53,6 @@ public class LevelCreator : MonoBehaviour {
 			input = new JSONObject (json.text);
 		}
 
-		print (input);
-
 		// Parse the path from JSON.
 		JSONObject pathJSON = input.GetField ("route");
 		if (pathJSON == null) {
@@ -226,7 +224,6 @@ public class LevelCreator : MonoBehaviour {
 		Vector3 pathEnd = PathUtil.SetY (fullPath[fullPath.Count - 1].GetEnd (), PathUtil.ceilingHeight);
 		RaycastHit hit;
 		if (Physics.Raycast (pathEnd, Vector3.down, out hit, PathUtil.ceilingHeight * 1.1f)) {
-			print (hit.point);
 			goal.transform.position = hit.point + Vector3.up * 0.025f;
 		} else {
 			goal.transform.position = fullPath[fullPath.Count - 1].GetEnd ();
