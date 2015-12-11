@@ -69,6 +69,7 @@ public class Tracker : MonoBehaviour {
 
 	// Writes the tracked data to a file and resets the data.
 	public void Reset () {
+		/*
 		if (states.Count > 10) {
 			StreamWriter logFile = File.CreateText (fileName);
 			foreach (EntityState state in states) {
@@ -76,6 +77,7 @@ public class Tracker : MonoBehaviour {
 			}
 			logFile.Close ();
 		}
+		*/
 		states.Clear ();
 	}
 }

@@ -87,7 +87,7 @@ public class Player : MonoBehaviour {
 			// Wait for the win animation before resetting the level.
 			if (goalTick > MAXGOALTICKS) {
 				goalTick = 0;
-				LevelManager.GetInstance ().ResetLevel ();
+				Application.LoadLevel (Application.loadedLevel);
 			} else {
 				goalTick++;
 			}
@@ -138,7 +138,11 @@ public class Player : MonoBehaviour {
 			}
 
 			if (reset) {
-				LevelManager.GetInstance ().ResetLevel ();
+				if (Input.GetKey (KeyCode.LeftShift)) {
+					Application.LoadLevel (Application.loadedLevel);
+				} else {
+					LevelManager.GetInstance ().ResetLevel ();
+				}
 			}
 
 			if (PathUtil.OnFloor (gameObject)) {

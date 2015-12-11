@@ -214,21 +214,22 @@ public class LevelCreator : MonoBehaviour {
 			pathComponent.transform.parent = player.transform;
 		}
 		levelManager.player = player;
-
-		// Create the goal at the end of the path.
-		GameObject goal = Instantiate (goalPrefab);
-		goal.transform.parent = levelManager.transform.FindChild ("Platforms").transform;
-		Vector3 pathEnd = fullPath[fullPath.Count - 1].GetEnd () + Vector3.up * 0.05f;
-		RaycastHit hit;
-		if (Physics.Raycast (pathEnd, Vector3.down, out hit, PathUtil.ceilingHeight * 1.1f)) {
-			goal.transform.position = hit.point + Vector3.up * 0.025f;
-		} else {
-			goal.transform.position = fullPath[fullPath.Count - 1].GetEnd ();
-		}
 		
 		// Create virtual platforms from the input.
 		foreach (PlatformInput input in platformInput) {
 			CreatePlatform (input);
+		}
+		
+		// Create the goal at the end of the path.
+		GameObject goal = Instantiate (goalPrefab);
+		goal.transform.parent = levelManager.transform.FindChild ("Platforms").transform;
+		Vector3 pathEnd = PathUtil.SetY (fullPath[fullPath.Count - 1].GetEnd (), PathUtil.ceilingHeight);
+		RaycastHit hit;
+		if (Physics.Raycast (pathEnd, Vector3.down, out hit, PathUtil.ceilingHeight * 1.1f)) {
+			print (hit.point);
+			goal.transform.position = hit.point + Vector3.up * 0.025f;
+		} else {
+			goal.transform.position = fullPath[fullPath.Count - 1].GetEnd ();
 		}
 
 		// Create enemies from the input.
