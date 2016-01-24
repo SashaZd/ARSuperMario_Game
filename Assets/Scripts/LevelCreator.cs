@@ -28,9 +28,9 @@ public class LevelCreator : MonoBehaviour {
 
 	// Where to get the JSON data from.
 	public string url;
-	// Hard-coded JSON asset for now.
+	// JSON file to load the level from.
 	public TextAsset json;
-	// Hard-coded surfaces for now.
+	// File to load surface data from.
 	public TextAsset surfaceFile;
 
 	// Whether to generate colliders directly from path points.
@@ -52,6 +52,8 @@ public class LevelCreator : MonoBehaviour {
 		if (json != null) {
 			input = new JSONObject (json.text);
 		}
+
+		Tracker.GetInstance ().logJSON (input.ToString ());
 
 		// Parse the path from JSON.
 		JSONObject pathJSON = input.GetField ("route");

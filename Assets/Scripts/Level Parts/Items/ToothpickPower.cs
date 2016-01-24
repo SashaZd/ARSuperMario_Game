@@ -82,4 +82,8 @@ public class ToothpickPower : MonoBehaviour, Power {
 		}
 		return null;
 	}
+
+	public override string ToString () {
+		return "Toothpicks x" + numToothpicks;
+	}
 }

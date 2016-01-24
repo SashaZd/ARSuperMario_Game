@@ -43,6 +43,7 @@ public class QuestionBlock : Block {
 	// Spawns the contents of the block above the block.
 	public override void HitBlock () {
 		if (!wasHit) {
+			Tracker.GetInstance ().logAction ("Block hit");
 			contentObject = Instantiate (contents);
 			contentObject.transform.position = transform.position;
 			contentIncrement = GetComponent<Collider> ().bounds.extents.y / 30;

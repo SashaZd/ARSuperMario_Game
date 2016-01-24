@@ -56,6 +56,9 @@ public class Player : MonoBehaviour {
 	// The non-trigger collider on the player.
 	Collider physicsCollider;
 
+	// The game state logger.
+	Tracker tracker;
+
 	// Use this for initialization.
 	void Start () {
 		pathMovement = GetComponent<PathMovement> ();
@@ -79,6 +82,8 @@ public class Player : MonoBehaviour {
 
 		Cursor.lockState = CursorLockMode.Locked;
 		Cursor.visible = false;
+
+		tracker = Tracker.GetInstance ();
 	}
 
 	// Update is called once per frame.
@@ -186,6 +191,7 @@ public class Player : MonoBehaviour {
 			bool incremented = false;
 			if (groundCounter > 0) {
 				jumpHeightTimer++;
+				tracker.logAction("Jumped.");
 			}
 			if (jumpHeightTimer > 0 && body.velocity.y > -0.01f) {
 				body.velocity = PathUtil.SetY (body.velocity, jumpSpeed);
@@ -237,6 +243,7 @@ public class Player : MonoBehaviour {
 
 	// Plays an animation upon reaching the goal.
 	public void HitGoal () {
+		tracker.logAction ("Won level.");
 		body.useGravity = false;
 		body.velocity = Vector3.up * jumpSpeed;
 		goalTick = 1;
@@ -259,6 +266,7 @@ public class Player : MonoBehaviour {
 			if (powers.Count == 0) {
 				KillPlayer ();
 			} else {
+				tracker.logAction ("Damaged player.");
 				int removeIndex = RandomUtil.RandomInt (0, powers.Count);
 				LosePower (powers[removeIndex]);
 				invincibleTimer = INVINCIBLEDELAY;
@@ -268,11 +276,13 @@ public class Player : MonoBehaviour {
 
 	// Kills the player and resets the level.
 	public void KillPlayer () {
+		tracker.logAction ("Killed player");
 		dead = true;
 	}
 
 	// Adds a power-up to the player.
 	public void AddPower (Power newPower) {
+		tracker.logAction (newPower.ToString () + " power added.");
 		powers.Add (newPower);
 	}
 
@@ -280,6 +290,7 @@ public class Player : MonoBehaviour {
 	public void LosePower (Power power) {
 		if (power != null) {
 			power.OnRemove ();
+			tracker.logAction (power.ToString () + " power removed.");
 			powers.Remove (power);
 			lostPowers++;
 			Destroy ((MonoBehaviour)power);

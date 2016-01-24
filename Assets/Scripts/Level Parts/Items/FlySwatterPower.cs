@@ -47,4 +47,8 @@ public class FlySwatterPower : MonoBehaviour, Power {
 	public void OnReset () {
 		Destroy (swatterInstance.gameObject);
 	}
+
+	public override string ToString () {
+		return "Fly Swatter";
+	}
 }

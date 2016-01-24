@@ -26,4 +26,8 @@ public class CoffeePower : MonoBehaviour, Power {
 		player.baseMoveSpeed /= 2;
 		player.runSpeed /= 2;
 	}
+
+	public override string ToString () {
+		return "Coffee";
+	}
 }

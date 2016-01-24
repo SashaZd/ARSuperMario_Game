@@ -16,6 +16,7 @@ public class Visibility : MonoBehaviour {
 		if (--keyTimer < 0 && Input.GetKey (KeyCode.Tab)) {
 			keyTimer = 10;
 			meshVisible = !meshVisible;
+			Tracker.GetInstance ().logAction ("Visibility toggled: " + meshVisible);
 			foreach (Transform platform in transform.FindChild ("Platforms")) {
 				if (platform.name == "Collider") {
 					platform.GetComponent<Renderer> ().enabled = !meshVisible;

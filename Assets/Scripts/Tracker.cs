@@ -1,48 +1,43 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections.Generic;
 using System.IO;
 
 // Tracks player and entity movement.
 public class Tracker : MonoBehaviour {
 
-	// The state of an entity at a point in time.
-	struct EntityState {
-		// The name of the entity.
-		string name;
-		// The position of the entity.
-		Vector3 position;
-		// The time this position was recorded.
-		float time;
-
-		// Initializes a state.
-		public EntityState(MonoBehaviour entity, float time) {
-			this.name = entity.name.Replace("(Clone)", "");
-			this.position = entity.transform.position;
-			this.time = time;
-		}
-
-		// Returns a string representation of the state.
-		public override string ToString() {
-			return time + " " + name + " " + position;
-		}
-	}
-
-	// Archive of entity states.
-	List<EntityState> states = new List<EntityState> ();
+	// The singleton tracker instance.
+	private static Tracker instance;
 
 	// The level manager in the scene.
 	LevelManager manager;
 
 	// The name of the file to write to.
-	public string fileName = "Assets/Temp/Tracking.txt";
+	public string filePath = "Assets/Tracking/";
 	// The number of frames to wait before recording a state.
 	public int interval;
 	// Timer for keeping track of state recording.
 	int intervalTimer;
 
+	// The log file.
+	StreamWriter file;
+
+	// Sets the tracker instance.
+	void Awake () {
+		instance = this;
+	}
+
 	// Use this for initialization.
 	void Start () {
 		manager = LevelManager.GetInstance ();
+	}
+	
+	// Gets the instance of the tracker.
+	public static Tracker GetInstance () {
+		if (instance == null) {
+			instance = GameObject.FindObjectOfType<Tracker>();
+		}
+		return instance;
 	}
 	
 	// Update is called once per frame.
@@ -52,32 +47,48 @@ public class Tracker : MonoBehaviour {
 			intervalTimer = 0;
 			float time = Time.time;
 			if (manager.player != null) {
-				states.Add (new EntityState (manager.player, time));
+				logEntity (manager.player, time);
 				foreach (Enemy enemy in manager.enemies) {
 					if (enemy != null && enemy.gameObject.activeSelf) {
-						states.Add (new EntityState (enemy, time));
+						logEntity(enemy, time);
 					}
 				}
 				foreach (Item item in manager.items) {
 					if (item != null && item.gameObject.activeSelf) {
-						states.Add (new EntityState (item, time));
+						logEntity(item, time);
 					}
 				}
 			}
 		}
 	}
 
-	// Writes the tracked data to a file and resets the data.
-	public void Reset () {
-		/*
-		if (states.Count > 10) {
-			StreamWriter logFile = File.CreateText (fileName);
-			foreach (EntityState state in states) {
-				logFile.Write (state.ToString () + "\n");
-			}
-			logFile.Close ();
+	// Writes an entity's state to the log.
+	void logEntity(MonoBehaviour entity, float time) {
+		string name = entity.name.Replace ("(Clone)", "");
+		Vector3 position = entity.transform.position;
+		file.WriteLine(time + " " + name + " " + position);
+	}
+
+	// Writes an action to the log.
+	public void logAction(string action) {
+		file.WriteLine(Time.time + " " + action);
+	}
+
+	// Creates a new log file and writes the level JSON data to it.
+	public void logJSON(string text) {
+		if (file != null) {
+			file.Close ();
+		} else {
+			System.IO.Directory.CreateDirectory(filePath);
 		}
-		*/
-		states.Clear ();
+		string date = DateTime.Now.ToString ().Replace (":", "").Replace ("/", "").Replace (" ", "_");
+
+		file = File.CreateText (filePath + "log_" + date);
+		file.WriteLine(text);
+	}
+
+	// Saves the log if the user quits the game.
+	void OnApplicationQuit() {
+		file.Close ();
 	}
 }

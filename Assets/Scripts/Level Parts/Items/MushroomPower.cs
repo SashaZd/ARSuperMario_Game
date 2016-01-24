@@ -22,4 +22,8 @@ public class MushroomPower : MonoBehaviour, Power {
 	public void OnReset () {
 		GetComponent<Player> ().SetSize (1);
 	}
+
+	public override string ToString () {
+		return "Mushroom";
+	}
 }

@@ -24,6 +24,7 @@ public class Enemy : MonoBehaviour {
 	
 	// Kills the enemy.
 	public void KillEntity () {
+		Tracker.GetInstance ().logAction ("Enemy killed: " + this.name.Replace("(Clone)", ""));
 		if (!invincible) {
 			gameObject.SetActive (false);
 		}
