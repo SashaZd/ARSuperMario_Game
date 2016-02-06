@@ -135,6 +135,11 @@ public class LevelCreator : MonoBehaviour {
 	// Creates a level from the given input.
 	public void CreateLevel (List<PathInput> pathInput, List<PlatformInput> platformInput, List<EnemyInput> enemyInput, List<CollectibleInput> collectibleInput, List<BlockInput> blockInput) {
 		LevelManager levelManager = LevelManager.GetInstance ();
+
+		// Create virtual platforms from the input.
+		foreach (PlatformInput input in platformInput) {
+			CreatePlatform (input);
+		}
 		
 		// Construct the path from the input points.
 		List<PathComponent> fullPath = new List<PathComponent>(pathInput.Count - 1);
@@ -149,6 +154,8 @@ public class LevelCreator : MonoBehaviour {
 				pathComponent.previousPath = fullPath[i - 1];
 				fullPath[i - 1].nextPath = pathComponent;
 			}
+
+			pathComponent.Init ();
 		}
 
 		// Construct virtual platforms to represent the colliders.
@@ -214,11 +221,6 @@ public class LevelCreator : MonoBehaviour {
 			pathComponent.transform.parent = player.transform;
 		}
 		levelManager.player = player;
-		
-		// Create virtual platforms from the input.
-		foreach (PlatformInput input in platformInput) {
-			CreatePlatform (input);
-		}
 		
 		// Create the goal at the end of the path.
 		GameObject goal = Instantiate (goalPrefab);
@@ -312,6 +314,7 @@ public class LevelCreator : MonoBehaviour {
 
 		// Pass the needed data to the level manager to store.
 		levelManager.fullPath = fullPath;
+		levelManager.pathRendererList = new PathRendererList (fullPath [0]);
 		levelManager.enemies = enemies;
 		levelManager.items = items;
 		levelManager.blocks = blocks;

@@ -26,6 +26,8 @@ public class LevelManager : MonoBehaviour {
 	public Player player;
 	// All segments in the ribbon path.
 	public List<PathComponent> fullPath;
+	// The currently rendered lines in the path.
+	public PathRendererList pathRendererList;
 	
 	// All enemies in the level.
 	public List<Enemy> enemies;
@@ -41,6 +43,11 @@ public class LevelManager : MonoBehaviour {
 	public void ResetLevel () {
 		Tracker.GetInstance ().logAction ("Reset level.");
 		player.Reset ();
+		if (pathRendererList == null) {
+			pathRendererList = new PathRendererList (fullPath [0]);
+		} else {
+			pathRendererList.Init (fullPath [0]);
+		}
 		foreach (Enemy enemy in enemies) {
 			enemy.Reset ();
 		}

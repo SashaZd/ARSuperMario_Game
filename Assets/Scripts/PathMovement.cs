@@ -6,6 +6,8 @@ public class PathMovement : MonoBehaviour {
 
 	// The part of the path where the object begins the level on.
 	public PathComponent startPath;
+	// How far along the path the object is at the start of the level.
+	public float startProgress = 0;
 	// Where the object begins the level at.
 	Vector3 startPosition;
 	// Whether the object has been placed on the ribbon path.
@@ -36,6 +38,7 @@ public class PathMovement : MonoBehaviour {
 	// Use this for initialization.
 	void Start () {
 		body = GetComponent<Rigidbody> ();
+		startProgress = pathProgress;
 		if (startPath != null) {
 			ResetPosition ();
 		}
@@ -70,7 +73,7 @@ public class PathMovement : MonoBehaviour {
 	// Resets the position of the object to its initial position.
 	public void ResetPosition () {
 		currentPath = startPath;
-		pathProgress = 0;
+		pathProgress = startProgress;
 		if (body == null) {
 			body = GetComponent<Rigidbody> ();
 		}
@@ -78,11 +81,15 @@ public class PathMovement : MonoBehaviour {
 
 		// Determine the starting position and save it in case the player resets.
 		if (!initiated) {
-			RaycastHit hit;
 			startPosition = startPath.GetPositionInPath (pathProgress);
-			startPosition.y = PathUtil.ceilingHeight;
-			Physics.Raycast (startPosition, Vector3.down, out hit, PathUtil.ceilingHeight * 1.1f);
-			startPosition.y = hit.point.y + groundOffset + 0.25f;
+			if (body.useGravity) {
+				RaycastHit hit;
+				startPosition.y = PathUtil.ceilingHeight;
+				Physics.Raycast (startPosition, Vector3.down, out hit, PathUtil.ceilingHeight * 1.1f);
+				startPosition.y = hit.point.y + groundOffset + 0.25f;
+			} else {
+				startPosition.y = transform.position.y;
+			}
 			initiated = true;
 		}
 		transform.position = startPosition;

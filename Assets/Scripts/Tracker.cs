@@ -22,6 +22,9 @@ public class Tracker : MonoBehaviour {
 	// The log file.
 	StreamWriter file;
 
+	// Whether player logging is enabled.
+	public bool loggingEnabled = true;
+
 	// Sets the tracker instance.
 	void Awake () {
 		instance = this;
@@ -64,18 +67,22 @@ public class Tracker : MonoBehaviour {
 
 	// Writes an entity's state to the log.
 	void logEntity(MonoBehaviour entity, float time) {
-		string name = entity.name.Replace ("(Clone)", "");
-		Vector3 position = entity.transform.position;
-		file.WriteLine(time + " " + name + " " + position);
+			string name = entity.name.Replace ("(Clone)", "");
+			Vector3 position = entity.transform.position;
+			WriteToFile (time + " " + name + " " + position);
 	}
 
 	// Writes an action to the log.
 	public void logAction(string action) {
-		file.WriteLine(Time.time + " " + action);
+		WriteToFile (Time.time + " " + action);
 	}
 
 	// Creates a new log file and writes the level JSON data to it.
 	public void logJSON(string text) {
+		if (!loggingEnabled) {
+			return;
+		}
+
 		if (file != null) {
 			file.Close ();
 		} else {
@@ -84,11 +91,20 @@ public class Tracker : MonoBehaviour {
 		string date = DateTime.Now.ToString ().Replace (":", "").Replace ("/", "").Replace (" ", "_");
 
 		file = File.CreateText (filePath + "log_" + date);
-		file.WriteLine(text);
+		WriteToFile (text);
+	}
+
+	// Writes text to the current log file.
+	private void WriteToFile (String text) {
+		if (loggingEnabled && file != null) {
+			file.WriteLine (text);
+		}
 	}
 
 	// Saves the log if the user quits the game.
 	void OnApplicationQuit() {
-		file.Close ();
+		if (file != null) {
+			file.Close ();
+		}
 	}
 }

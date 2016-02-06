@@ -78,7 +78,7 @@ public class PathUtil {
 		PathComponent closestPath = null;
 		float minDistance = (float)Int32.MaxValue;
 		foreach (PathComponent pathComponent in LevelManager.GetInstance ().fullPath) {
-			float pathDistance = PathUtil.DistancePointLine (position, pathComponent.GetStart (), pathComponent.GetEnd ());
+			float pathDistance = DistancePointLine (RemoveY (position), RemoveY (pathComponent.GetStart ()), RemoveY (pathComponent.GetEnd ()));
 			if (pathDistance < minDistance) {
 				minDistance = pathDistance;
 				closestPath = pathComponent;
@@ -89,13 +89,13 @@ public class PathUtil {
 		}
 		pathMovement.currentPath = closestPath;
 		pathMovement.startPath = closestPath;
-		pathMovement.pathProgress = PathUtil.ProjectionPointLine (position, closestPath.GetStart (), closestPath.GetEnd ()).x / closestPath.GetLength ().x;
+		pathMovement.pathProgress = ProjectionPointLine (position, closestPath.GetStart (), closestPath.GetEnd ()).x / closestPath.GetLength ().x;
 	}
 
 	// Moves the object towards a target position, ignoring y.
 	public static void MoveTowardsXZ (Transform current, Vector3 target, float maxDeltaDistance) {
-		Vector2 currentPositionXZ = PathUtil.Vector2From3 (current.position);
-		Vector2 targetPositionXZ = PathUtil.Vector2From3 (target);
+		Vector2 currentPositionXZ = Vector2From3 (current.position);
+		Vector2 targetPositionXZ = Vector2From3 (target);
 		Vector2 travelDistance = Vector2.MoveTowards (currentPositionXZ, targetPositionXZ, maxDeltaDistance);
 		SetXZ (current, travelDistance);
 	}
@@ -108,6 +108,11 @@ public class PathUtil {
 	// Gets the magnitude of the x and z components of a vector.
 	public static float GetMagnitudeXZ (Vector3 vector) {
 		return Vector2.SqrMagnitude (Vector2From3 (vector));
+	}
+
+	// Gets the distance between two vectors, ignoring height.
+	public static float DistanceXZ (Vector3 vector1, Vector3 vector2) {
+		return Vector3.Distance (RemoveY (vector1), RemoveY (vector2));
 	}
 
 	// Makes a vector from a size 3 JSON array.

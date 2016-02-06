@@ -30,8 +30,9 @@ public class QuestionBlock : Block {
 			contentHeight += contentIncrement;
 			if (contentHeight > contentIncrement * 60) {
 				contentIncrement = 0;
-				if (contentObject.GetComponent<Rigidbody> ()) {
-					contentObject.GetComponent<Rigidbody> ().useGravity = true;
+				Rigidbody body = contentObject.GetComponent<Rigidbody> ();
+				if (body) {
+					body.useGravity = true;
 				}
 				contentObject.GetComponent<Collider> ().enabled = true;
 				contentObject.GetComponent<Item> ().EmergeFromBlock ();
@@ -47,8 +48,9 @@ public class QuestionBlock : Block {
 			contentObject = Instantiate (contents);
 			contentObject.transform.position = transform.position;
 			contentIncrement = GetComponent<Collider> ().bounds.extents.y / 30;
-			if (contentObject.GetComponent<Rigidbody> ()) {
-			    contentObject.GetComponent<Rigidbody> ().useGravity = false;
+			Rigidbody body = contentObject.GetComponent<Rigidbody> ();
+			if (body) {
+			    body.useGravity = false;
 			    contentObject.GetComponent<PathMovement> ().moveSpeed = 0;
 			}
 			contentObject.GetComponent<Collider> ().enabled = false;

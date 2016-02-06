@@ -23,13 +23,15 @@ public class PathComponent : MonoBehaviour {
 
 	// The length of individual segments of the rendered line.
 	const float LINELENGTH = 0.1f;
-	// The thickness of the rendered line.
-	const float LINETHICKNESS = 0.05f;
 	// The material to draw the line with.
 	public Material lineMaterial;
+	// The first rendered part of the path.
+	public PathRenderer firstLine;
+	// The last rendered part of the path.
+	public PathRenderer lastLine;
 
 	// Use this for initialization.
-	void Start () {
+	public void Init () {
 		if (magnitude == 0) {
 			if (start == end) {
 				// If start and end points aren't already set, find them from the center point and rotation.
@@ -115,7 +117,7 @@ public class PathComponent : MonoBehaviour {
 	// Gets a position at a specified part (fraction) of the path.
 	public Vector3 GetPositionInPath (float pathProgress) {
 		if (magnitude == 0) {
-			Start ();
+			Init ();
 		}
 		return start + length * pathProgress;
 	}
@@ -132,11 +134,17 @@ public class PathComponent : MonoBehaviour {
 
 	// Draws a dotted line along the ribbon path.
 	public void DrawLine () {
+		if (firstLine != null) {
+			return;
+		}
 		if (magnitude < Mathf.Epsilon) {
+			firstLine = new PathRenderer (this, start, end, lineMaterial);
+			lastLine = firstLine;
 			return;
 		}
 
 		int numLines = (int)(magnitude / LINELENGTH / 2) + 1;
+		PathRenderer prevPathRenderer = null;
 		for (int i = 0; i < numLines; i++) {
 
 			// Get the start and end points of the segment.
@@ -160,18 +168,28 @@ public class PathComponent : MonoBehaviour {
 			if (Physics.Raycast (lineCenter, Vector3.down, out hit, PathUtil.ceilingHeight * 1.1f, ~(1 << 11))) {
 				lineStart.y = hit.point.y;
 				lineEnd.y = hit.point.y;
-
-				// Draw the segment.
-				LineRenderer line = new GameObject().AddComponent<LineRenderer> () as LineRenderer;
-				line.gameObject.name = "LineRenderer";
-				line.material = lineMaterial;
-				line.transform.parent = transform;
-				line.SetWidth(LINETHICKNESS, LINETHICKNESS);
-				line.SetVertexCount(2);
-
-				line.SetPosition(0, lineStart);
-				line.SetPosition(1, lineEnd);
 			}
+
+			// Draw the segment.
+			PathRenderer pathRenderer = new PathRenderer (this, lineStart, lineEnd, lineMaterial);
+			if (prevPathRenderer != null) {
+				pathRenderer.prevLine = prevPathRenderer;
+				prevPathRenderer.nextLine = pathRenderer;
+			}
+			if (i == 0) {
+				firstLine = pathRenderer;
+			}
+			prevPathRenderer = pathRenderer;
+		}
+		if (firstLine == null) {
+			firstLine = new PathRenderer (this, start, end, lineMaterial);
+			lastLine = firstLine;
+		} else {
+			lastLine = prevPathRenderer;
+		}
+		if (previousPath != null) {
+			firstLine.prevLine = previousPath.lastLine;
+			previousPath.lastLine.nextLine = firstLine;
 		}
 	}
 

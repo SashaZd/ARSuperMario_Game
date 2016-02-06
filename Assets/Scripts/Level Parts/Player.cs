@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.SceneManagement;
 using System;
 using System.Collections.Generic;
 
@@ -92,7 +93,7 @@ public class Player : MonoBehaviour {
 			// Wait for the win animation before resetting the level.
 			if (goalTick > MAXGOALTICKS) {
 				goalTick = 0;
-				Application.LoadLevel (Application.loadedLevel);
+				SceneManager.LoadScene (SceneManager.GetActiveScene().name);
 			} else {
 				goalTick++;
 			}
@@ -116,6 +117,7 @@ public class Player : MonoBehaviour {
 			if (canMove) {
 				if (forward ^ backward) {
 					pathMovement.MoveAlongPath (forward);
+					LevelManager.GetInstance ().pathRendererList.CheckList (this, forward);
 				}
 
 				UpdateRun (run && (forward ^ backward));
@@ -144,7 +146,7 @@ public class Player : MonoBehaviour {
 
 			if (reset) {
 				if (Input.GetKey (KeyCode.LeftShift)) {
-					Application.LoadLevel (Application.loadedLevel);
+					SceneManager.LoadScene (SceneManager.GetActiveScene().name);
 				} else {
 					LevelManager.GetInstance ().ResetLevel ();
 				}
@@ -300,6 +302,11 @@ public class Player : MonoBehaviour {
 	// Returns true if the player has won the level.
 	public bool HasWon () {
 		return goalTick > 0;
+	}
+
+	// Gets the current path that the player is on.
+	public PathComponent GetCurrentPath() {
+		return pathMovement.currentPath;
 	}
 
 	// Resets the player when the level restarts.
