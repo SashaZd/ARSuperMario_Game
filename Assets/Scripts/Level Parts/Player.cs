@@ -89,6 +89,9 @@ public class Player : MonoBehaviour {
 
 	// Update is called once per frame.
 	void FixedUpdate () {
+		if (GameMenuUI.paused) {
+			return;
+		}
 		if (goalTick > 0) {
 			// Wait for the win animation before resetting the level.
 			if (goalTick > MAXGOALTICKS) {

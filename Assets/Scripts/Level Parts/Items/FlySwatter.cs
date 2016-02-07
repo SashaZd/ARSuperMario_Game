@@ -35,6 +35,9 @@ public class FlySwatter : MonoBehaviour {
 	
 	// Update is called once per frame.
 	void Update () {
+		if (GameMenuUI.paused) {
+			return;
+		}
 		if (willHit) {
 			hit = true;
 		}

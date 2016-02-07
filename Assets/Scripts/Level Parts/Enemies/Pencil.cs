@@ -32,6 +32,9 @@ public class Pencil : MonoBehaviour, Movement {
 	
 	// Update is called once per frame.
 	void Update () {
+		if (GameMenuUI.paused) {
+			return;
+		}
 		if (turningMode == 0) {
 			if (!pathMovement.MoveAlongPath (forward)) {
 				forward = !forward;

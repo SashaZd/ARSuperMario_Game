@@ -25,6 +25,9 @@ public class QuestionBlock : Block {
 
 	// Update is called once per frame.
 	void Update () {
+		if (GameMenuUI.paused) {
+			return;
+		}
 		if (contentIncrement > 0) {
 			PathUtil.SetY (contentObject.transform, contentObject.transform.position.y + contentIncrement);
 			contentHeight += contentIncrement;

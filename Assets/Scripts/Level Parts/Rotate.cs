@@ -9,6 +9,9 @@ public class Rotate : MonoBehaviour {
 
 	// Update is called once per frame.
 	void Update () {
+		if (GameMenuUI.paused) {
+			return;
+		}
 		transform.Rotate (new Vector3 (0f, rotateSpeed, 0f));
 	}
 }

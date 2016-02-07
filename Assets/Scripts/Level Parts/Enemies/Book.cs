@@ -37,6 +37,9 @@ public class Book : MonoBehaviour, Movement {
 	
 	// Update is called once per frame.
 	void Update () {
+		if (GameMenuUI.paused) {
+			return;
+		}
 		if (stage == Stage.Idle && targetingPlayer) {
 			stage = Stage.Rise;
 			groundedHeight = transform.position.y;

@@ -20,6 +20,9 @@ public class BackAndForthPath : MonoBehaviour, Movement {
 	
 	// Update is called once per frame.
 	void Update () {
+		if (GameMenuUI.paused) {
+			return;
+		}
 		if (!pathMovement.MoveAlongPath (forward)) {
 			forward = !forward;
 		}
