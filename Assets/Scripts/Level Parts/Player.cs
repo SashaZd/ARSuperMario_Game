@@ -11,7 +11,7 @@ public class Player : MonoBehaviour {
 	// The rigid body controlling the object's physics.
 	Rigidbody body;
 	// Renderer for displaying the player.
-	Renderer playerRenderer;
+	Renderer[] playerRenderers;
 	
 	// The normal walking speed of the player.
 	public float baseMoveSpeed = 0.01f;
@@ -60,11 +60,14 @@ public class Player : MonoBehaviour {
 	// The game state logger.
 	Tracker tracker;
 
+	// The animator controlling the player model's animations.
+	Animator animator;
+
 	// Use this for initialization.
 	void Start () {
 		pathMovement = GetComponent<PathMovement> ();
 		body = GetComponent<Rigidbody> ();
-		playerRenderer = GetComponent<Renderer> ();
+		playerRenderers = GetComponentsInChildren<SkinnedMeshRenderer>();
 
 		canMove = true;
 
@@ -85,6 +88,7 @@ public class Player : MonoBehaviour {
 		Cursor.visible = false;
 
 		tracker = Tracker.GetInstance ();
+		animator = GetComponentInChildren<Animator>();
 	}
 
 	// Update is called once per frame.
@@ -101,9 +105,12 @@ public class Player : MonoBehaviour {
 				goalTick++;
 			}
 		} else if (dead) {
-			Color playerColor = playerRenderer.material.color;
-			playerColor.a -= 0.05f;
-			playerRenderer.material.color = playerColor;
+			Color playerColor = new Color();
+			foreach (Renderer playerRenderer in playerRenderers) {
+				playerColor = playerRenderer.material.color;
+				playerColor.a -= 0.05f;
+				playerRenderer.material.color = playerColor;
+			}
 			body.constraints = body.constraints | RigidbodyConstraints.FreezePositionY;
 			if (playerColor.a < Mathf.Epsilon) {
 				LevelManager.GetInstance ().ResetLevel ();
@@ -117,9 +124,10 @@ public class Player : MonoBehaviour {
 			bool run = Input.GetKey (KeyCode.H);
 			bool powerKey = Input.GetKey (KeyCode.Return);
 
+			bool moving = false;
 			if (canMove) {
 				if (forward ^ backward) {
-					pathMovement.MoveAlongPath (forward);
+					moving = pathMovement.MoveAlongPath (forward);
 					LevelManager.GetInstance ().pathRendererList.CheckList (this, forward);
 				}
 
@@ -127,6 +135,8 @@ public class Player : MonoBehaviour {
 
 				Jump (jump);
 			}
+			animator.SetBool ("moving", moving);
+			animator.SetBool ("running", run && moving);
 
 			UpdateInvincible ();
 
@@ -172,6 +182,7 @@ public class Player : MonoBehaviour {
 	public void OnTriggerEnter (Collider collider) {
 		if (isGround (collider.tag)) {
 			groundCounter++;
+			animator.SetBool ("jumping", false);
 		}
 	}
 
@@ -197,6 +208,7 @@ public class Player : MonoBehaviour {
 			if (groundCounter > 0) {
 				jumpHeightTimer++;
 				tracker.logAction("Jumped.");
+				animator.SetBool ("jumping", true);
 			}
 			if (jumpHeightTimer > 0 && body.velocity.y > -0.01f) {
 				body.velocity = PathUtil.SetY (body.velocity, jumpSpeed);
@@ -229,10 +241,14 @@ public class Player : MonoBehaviour {
 	void UpdateInvincible () {
 		if (invincibleTimer > 0) {
 			invincibleTimer--;
+			bool rendererEnabled;
 			if (invincibleTimer > INVINCIBLEDELAY / 2) {
-				playerRenderer.enabled = invincibleTimer / 20 % 2 == 1;
+				rendererEnabled = invincibleTimer / 20 % 2 == 1;
 			} else {
-				playerRenderer.enabled = invincibleTimer / 10 % 2 == 0;
+				rendererEnabled = invincibleTimer / 10 % 2 == 0;
+			}
+			foreach (Renderer playerRenderer in playerRenderers) {
+				playerRenderer.enabled = rendererEnabled;
 			}
 		}
 	}
@@ -253,6 +269,7 @@ public class Player : MonoBehaviour {
 		body.velocity = Vector3.up * jumpSpeed;
 		goalTick = 1;
 		physicsCollider.enabled = false;
+		ResetAnimation ();
 	}
 
 	// Sets the size of the player.
@@ -283,6 +300,7 @@ public class Player : MonoBehaviour {
 	public void KillPlayer () {
 		tracker.logAction ("Killed player");
 		dead = true;
+		animator.speed = 0;
 	}
 
 	// Adds a power-up to the player.
@@ -327,12 +345,24 @@ public class Player : MonoBehaviour {
 		}
 		powers.Clear ();
 		invincibleTimer = 0;
-		playerRenderer.enabled = true;
+		foreach (Renderer playerRenderer in playerRenderers) {
+			playerRenderer.enabled = true;
+			Color playerColor = playerRenderer.material.color;
+			playerColor.a = 1;
+			playerRenderer.material.color = playerColor;
+		}
 		canMove = true;
 		dead = false;
-		Color playerColor = playerRenderer.material.color;
-		playerColor.a = 1;
-		playerRenderer.material.color = playerColor;
 		physicsCollider.enabled = true;
+		ResetAnimation ();
+	}
+
+	// Resets the player's animation to an idle state.
+	private void ResetAnimation () {
+		animator.SetBool ("moving", false);
+		animator.SetBool ("running", false);
+		animator.SetBool ("jumping", false);
+		animator.SetTrigger ("reset");
+		animator.speed = 1;
 	}
 }
