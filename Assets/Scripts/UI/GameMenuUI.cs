@@ -55,6 +55,7 @@ public class GameMenuUI : MonoBehaviour {
 
 	// Returns the user to the main menu.
 	public void ReturnToMain () {
+		paused = false;
 		Time.timeScale = 1;
 		SceneManager.LoadScene ("MainMenu");
 	}

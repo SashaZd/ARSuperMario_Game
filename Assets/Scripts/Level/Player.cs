@@ -76,6 +76,7 @@ public class Player : MonoBehaviour {
 			runSpeed = baseMoveSpeed * 1.5f;
 		}
 		speedIncrement = (runSpeed - baseMoveSpeed) / 30f;
+		pathMovement.ResetPosition ();
 		// Get the non-trigger collider on the player.
 		foreach (Collider collider in GetComponents<Collider> ()) {
 			if (!collider.isTrigger) {

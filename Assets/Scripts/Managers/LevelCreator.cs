@@ -40,26 +40,28 @@ public class LevelCreator : MonoBehaviour {
 	const float PLATFORMHEIGHT = 0.05f;
 
 	// Use this for initialization.
-	IEnumerator Start () {
-		WWW www = new WWW (url);
-		yield return www;
-
-		// Test connecting to server for dummy JSON data.
-		// Requires the back-end server to be set up.
-		JSONObject input = new JSONObject (www.text);
-
-		// Hard-coded JSON resource for testing.
-		if (json != null) {
-			input = new JSONObject (json.text);
+	void Start () {
+		if (json == null) {
+			// Connect to the server to get JSON file.
+			NetworkingManager.instance.ProcessStringFromURL (url, (jsonText) =>
+				{
+					CreateLevel(jsonText);
+				});
+		} else {
+			// Hard-coded JSON resource for testing.
+			CreateLevel (json.text);
 		}
+	}
 
-		Tracker.GetInstance ().logJSON (input.ToString ());
+	void CreateLevel (string jsonText) {
+		JSONObject input = new JSONObject (jsonText);
+		Tracker.GetInstance ().logJSON (jsonText);
 
 		// Parse the path from JSON.
 		JSONObject pathJSON = input.GetField ("route");
 		if (pathJSON == null) {
 			print ("Failed to load JSON file.");
-			return false;
+			return;
 		}
 		List<PathInput> pathInput = new List<PathInput> (pathJSON.list.Count);
 		foreach (JSONObject pathComponent in pathJSON.list) {
