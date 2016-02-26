@@ -26,8 +26,6 @@ public class LevelCreator : MonoBehaviour {
 	// The material to draw path lines with.
 	public Material lineMaterial;
 
-	// Where to get the JSON data from.
-	public string url;
 	// JSON file to load the level from.
 	public TextAsset json;
 	// File to load surface data from.
@@ -43,7 +41,7 @@ public class LevelCreator : MonoBehaviour {
 	void Start () {
 		if (json == null) {
 			// Connect to the server to get JSON file.
-			NetworkingManager.instance.ProcessStringFromURL (url, (jsonText) =>
+			NetworkingManager.instance.ProcessStringFromURL ((jsonText) =>
 				{
 					CreateLevel(jsonText);
 				});

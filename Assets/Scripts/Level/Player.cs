@@ -54,6 +54,11 @@ public class Player : MonoBehaviour {
 	// The current scale of the player.
 	int size = 1;
 
+	// Timer for posting the player's position to the server.
+	int postTimer = 0;
+	// Time between posting the player's position to the server.
+	public int postInterval = 10;
+
 	// The non-trigger collider on the player.
 	Collider physicsCollider;
 
@@ -96,6 +101,10 @@ public class Player : MonoBehaviour {
 	void FixedUpdate () {
 		if (GameMenuUI.paused) {
 			return;
+		}
+		if (++postTimer > postInterval) {
+			postTimer = 0;
+			NetworkingManager.instance.PostPositionInURL(transform.position);
 		}
 		if (goalTick > 0) {
 			// Wait for the win animation before resetting the level.

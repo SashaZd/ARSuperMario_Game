@@ -5,6 +5,9 @@ using System.Net;
 
 // Handles sending and receiving from the internet.
 public class NetworkingManager : MonoBehaviour {
+	
+	// Where to send and receive data from.
+	public string url;
 
 	// The singleton instance of the networking manager.
 	public static NetworkingManager instance;
@@ -15,28 +18,28 @@ public class NetworkingManager : MonoBehaviour {
 	}
 
 	// Processes a string obtained from a URL.
-	public void ProcessStringFromURL (string url, Action<string> OnGet) {
-		StartCoroutine(GetURL (url, OnGet));
+	public void ProcessStringFromURL (Action<string> OnGet) {
+		StartCoroutine(GetURL (OnGet));
 	}
 
 	// Processes a string obtained from a URL.
-	private IEnumerator GetURL (string url, Action<string> OnGet) {
+	private IEnumerator GetURL (Action<string> OnGet) {
 		WWW www = new WWW(url);
 		yield return www;
 		OnGet(www.text);
 	}
 
 	// Posts a position to a URL.
-	public void PostPositionInURL (string url, Vector3 position) {
+	public void PostPositionInURL (Vector3 position) {
 		WWWForm form = new WWWForm();
 		form.AddField ("x", position.x.ToString ());
 		form.AddField ("y", position.y.ToString ());
 		form.AddField ("z", position.z.ToString ());
-		PostURL (url, form);
+		PostURL (form);
 	}
 
 	// Posts a form to a URL.
-	private IEnumerator PostURL (string url, WWWForm form) {
+	private IEnumerator PostURL (WWWForm form) {
 		WWW www = new WWW(url, form);
 		yield return www;
 	}
