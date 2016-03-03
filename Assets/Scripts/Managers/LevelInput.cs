@@ -1,108 +1,170 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
-// Used to add a path for a level.
+/// <summary>
+/// Used to add a path for a level.
+/// </summary>
 public struct PathInput {
-	// The position of a path vertex.
+	/// <summary> The position of a path vertex. </summary>
 	public Vector3 position;
 
-	public PathInput (float x, float y, float z) {
-		position = new Vector3 (x, y, z);
+	/// <summary>
+	/// Creates a path input.
+	/// </summary>
+	/// <param name="x">The x coordinate of the path vertex.</param>
+	/// <param name="y">The y coordinate of the path vertex.</param>
+	/// <param name="z">The z coordinate of the path vertex.</param>
+	public PathInput(float x, float y, float z) {
+		position = new Vector3(x, y, z);
 	}
 
-	public PathInput (JSONObject json) {
-		position = PathUtil.MakeVectorFromJSON (json);
+	/// <summary>
+	/// Creates a path input.
+	/// </summary>
+	/// <param name="json">JSON data for the path vertex.</param>
+	public PathInput(JSONObject json) {
+		position = PathUtil.MakeVectorFromJSON(json);
 	}
 }
 
-// Used to add virtual platforms to a level.
+/// <summary>
+/// Used to add virtual platforms to a level.
+/// </summary>
 public struct PlatformInput {
+	/// <summary> The type of platform to create. </summary>
 	public int type;
-	// The position of a corner of the platform.
+	/// <summary> The positions of the corners of the platform. </summary>
 	public List<Vector3> vertices;
 
-	public PlatformInput (JSONObject json) {
+	/// <summary>
+	/// Creates a platform input.
+	/// </summary>
+	/// <param name="json">JSON data for the platform.</param>
+	public PlatformInput(JSONObject json) {
 		vertices = new List<Vector3> ();
-		if (json.HasField ("platform_type")) {
-			type = (int) json.GetField ("platform_type").n;
-			foreach (JSONObject vertex in json.GetField ("platform_points").list) {
-				vertices.Add (PathUtil.MakeVectorFromJSON (vertex));
+		if (json.HasField("platform_type")) {
+			type = (int)json.GetField("platform_type").n;
+			foreach (JSONObject vertex in json.GetField("platform_points").list) {
+				vertices.Add(PathUtil.MakeVectorFromJSON (vertex));
 			}
 		} else {
 			type = 1;
 			foreach (JSONObject vertex in json.list) {
-				vertices.Add (PathUtil.MakeVectorFromJSON (vertex));
+				vertices.Add(PathUtil.MakeVectorFromJSON (vertex));
 			}
 		}
 	}
 
-	public PlatformInput (List<Vector3> vertices) {
+	/// <summary>
+	/// Creates a platform input.
+	/// </summary>
+	/// <param name="vertices">The positions of the corners of the platform.</param>
+	public PlatformInput(List<Vector3> vertices) {
 		type = 1;
 		this.vertices = vertices;
 	}
 }
 
-// Used to add enemies into a level.
+/// <summary>
+/// Used to add enemies into a level.
+/// </summary>
 public struct EnemyInput {
-	// The index of the type of enemy.
+	/// <summary> The index of the type of enemy. </summary>
 	public int enemyIndex;
-	// The vertices of the path the enemy will follow.
+	/// <summary> The vertices of the path the enemy will follow. </summary>
 	public List<PathInput> path;
 
-	public EnemyInput (int enemyIndex, List<PathInput> path) {
+	/// <summary>
+	/// Creates an enemy input.
+	/// </summary>
+	/// <param name="enemyIndex">The index of the type of enemy.</param>
+	/// <param name="path">The vertices of the path the enemy will follow.</param>
+	public EnemyInput(int enemyIndex, List<PathInput> path) {
 		this.enemyIndex = enemyIndex;
 		this.path = path;
 	}
 
-	public EnemyInput (JSONObject json) {
-		JSONObject enemyPathJSON = json.GetField ("enemy_path");
-		path = new List<PathInput> (enemyPathJSON.list.Count);
+	/// <summary>
+	/// Creates an enemy input.
+	/// </summary>
+	/// <param name="json">JSON data for the enemy.</param>
+	public EnemyInput(JSONObject json) {
+		JSONObject enemyPathJSON = json.GetField("enemy_path");
+		path = new List<PathInput>(enemyPathJSON.list.Count);
 		foreach (JSONObject pathComponent in enemyPathJSON.list) {
-			path.Add (new PathInput (pathComponent));
+			path.Add(new PathInput(pathComponent));
 		}
-		enemyIndex = (int) json.GetField ("enemy_type").n;
+		enemyIndex = (int)json.GetField("enemy_type").n;
 	}
 }
 
-// Used to add collectibles into a level.
+/// <summary>
+/// Used to add collectibles into a level.
+/// </summary>
 public struct CollectibleInput {
-	// The type of collectible.
+	/// <summary> The type of collectible. </summary>
 	public string type;
-	// The position of the collectible.
+	/// <summary> The position of the collectible. </summary>
 	public Vector3 position;
 
-	public CollectibleInput (float x, float y, float z) {
+	/// <summary>
+	/// Creates a collectible input.
+	/// </summary>
+	/// <param name="x">The x coordinate of the position of the collectible.</param>
+	/// <param name="y">The y coordinate of the position of the collectible.</param>
+	/// <param name="z">The z coordinate of the position of the collectible.</param>
+	public CollectibleInput(float x, float y, float z) {
 		type = "coin";
-		position = new Vector3 (x, y, z);
+		position = new Vector3(x, y, z);
 	}
-
-	public CollectibleInput (JSONObject json) {
-		type = json.GetField ("collectible_type").str;
-		position = PathUtil.MakeVectorFromJSON (json.GetField ("position"));
+		
+	/// <summary>
+	/// Creates a collectible input.
+	/// </summary>
+	/// <param name="json">JSON data for the collectible.</param>
+	public CollectibleInput(JSONObject json) {
+		type = json.GetField("collectible_type").str;
+		position = PathUtil.MakeVectorFromJSON(json.GetField("position"));
 	}
 }
 
-// Enum mapping items to array indices.
+/// <summary>
+/// Mapping of items to array indices.
+/// </summary>
 public enum Items {Coin, Mushroom, Coffee, Toothpick, FlySwatter};
 
-// Used to add blocks into a level.
+/// <summary>
+/// Used to add blocks into a level.
+/// </summary>
 public struct BlockInput {
-	// The index of the type of block.
+	/// <summary> The index of the type of block. </summary>
 	public int blockIndex;
-	// The index of the type of item inside the block.
+	/// <summary> The index of the type of item inside the block. </summary>
 	public int contentIndex;
-	// The position of the block.
+	/// <summary> The position of the block. </summary>
 	public Vector3 position;
 
+	/// <summary>
+	/// Creates a block input.
+	/// </summary>
+	/// <param name="blockIndex">The index of the type of block.</param>
+	/// <param name="contentIndex">The index of the type of item inside the block.</param>
+	/// <param name="x">The x coordinate of the position of the block.</param>
+	/// <param name="y">The y coordinate of the position of the block.</param>
+	/// <param name="z">The z coordinate of the position of the block.</param>
 	public BlockInput (int blockIndex, int contentIndex, float x, float y, float z) {
 		this.blockIndex = blockIndex;
 		this.contentIndex = contentIndex;
 		position = new Vector3 (x, y, z);
 	}
 
-	public BlockInput (JSONObject json) {
-		this.blockIndex = (int) json.GetField ("type").n;
-		this.contentIndex = (int) json.GetField ("contents").n;
-		position = PathUtil.MakeVectorFromJSON (json.GetField ("position"));
+	/// <summary>
+	/// Creates a block input.
+	/// </summary>
+	/// <param name="json">JSON data for the block.</param>
+	public BlockInput(JSONObject json) {
+		this.blockIndex = (int)json.GetField("type").n;
+		this.contentIndex = (int)json.GetField("contents").n;
+		position = PathUtil.MakeVectorFromJSON(json.GetField("position"));
 	}
 }

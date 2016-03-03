@@ -1,42 +1,47 @@
 ﻿using UnityEngine;
-using System.Collections;
 
-// Attempts to float above and squash the player.
+/// <summary>
+/// Attempts to float above and squash the player.
+/// </summary>
 public class Book : MonoBehaviour, Movement {
 
-	// The initial position of the book.
-	Vector3 startPosition;
+	/// <summary> The initial position of the book. </summary>
+	private Vector3 startPosition;
 
-	// The player the book is targeting.
-	Player target;
-	// The book's rigidbody.
-	Rigidbody body;
+	/// <summary> The player the book is targeting. </summary>
+	private Player target;
+	/// <summary> The book's rigidbody. </summary>
+	private Rigidbody body;
 
-	// Whether the book is currently chasing the player.
-	bool targetingPlayer = false;
-	// The current movement stage of the book.
-	Stage stage = Stage.Idle;
+	/// <summary> Whether the book is currently chasing the player. </summary>
+	private bool targetingPlayer = false;
+	/// <summary> The current movement stage of the book. </summary>
+	private Stage stage = Stage.Idle;
 
-	// The height of the book when on the ground.
-	float groundedHeight;
-	// The height that the book will rise to.
-	float targetHeight;
-	// The position that the book will move towards.
-	Vector3 targetPosition;
-	// The delay after the book falls before it begins moving again.
-	int fallDelay = 0;
+	/// <summary> The height of the book when on the ground. </summary>
+	private float groundedHeight;
+	/// <summary> The height that the book will rise to. </summary>
+	private float targetHeight;
+	/// <summary> The position that the book will move towards. </summary>
+	private Vector3 targetPosition;
+	/// <summary> The delay after the book falls before it begins moving again. </summary>
+	private int fallDelay = 0;
 
-	// Stages in the book's movement.
-	enum Stage {Idle, Rise, Chase, Fall};
+	/// <summary>
+	/// Stages in the book's movement.
+	/// </summary>
+	private enum Stage {Idle, Rise, Chase, Fall};
 
-	// Use this for initialization.
-	void Start () {
+	/// <summary>
+	/// Initializes the book.
+	/// </summary>
+	private void Start() {
 		startPosition = transform.position;
-		body = GetComponent<Rigidbody> ();
+		body = GetComponent<Rigidbody>();
 	}
 	
 	// Update is called once per frame.
-	void Update () {
+	private void Update() {
 		if (GameMenuUI.paused) {
 			return;
 		}
@@ -44,21 +49,21 @@ public class Book : MonoBehaviour, Movement {
 			stage = Stage.Rise;
 			groundedHeight = transform.position.y;
 			body.useGravity = false;
-			targetHeight = target.GetComponent<Collider> ().bounds.extents.y * 4;
+			targetHeight = target.GetComponent<Collider>().bounds.extents.y * 4;
 		} else if (stage == Stage.Rise) {
-			PathUtil.SetY (transform, transform.position.y + 0.005f);
+			PathUtil.SetY(transform, transform.position.y + 0.005f);
 			if (transform.position.y - groundedHeight > targetHeight) {
 				targetPosition = target.transform.position;
 				stage = Stage.Chase;
 			}
 		} else if (stage == Stage.Chase) {
-			PathUtil.MoveTowardsXZ (transform, targetPosition, 0.005f);
-			if (PathUtil.GetMagnitudeXZ (transform.position - targetPosition) < Mathf.Epsilon) {
+			PathUtil.MoveTowardsXZ(transform, targetPosition, 0.005f);
+			if (PathUtil.GetMagnitudeXZ(transform.position - targetPosition) < Mathf.Epsilon) {
 				stage = Stage.Fall;
 			}
 		} else if (stage == Stage.Fall) {
 			body.useGravity = true;
-			if (Mathf.Abs (body.velocity.y) < Mathf.Epsilon && fallDelay++ > 20) {
+			if (Mathf.Abs(body.velocity.y) < Mathf.Epsilon && fallDelay++ > 20) {
 				fallDelay = 0;
 				body.useGravity = false;
 				stage = Stage.Idle;
@@ -66,29 +71,40 @@ public class Book : MonoBehaviour, Movement {
 		}
 	}
 
-	// Causes the book to give up chase if something is in the way.
-	void OnCollisionEnter (Collision collision) {
+	/// <summary>
+	/// Causes the book to give up chase if something is in the way.
+	/// </summary>
+	/// <param name="collision">The collision that the book was involved in.</param>
+	private void OnCollisionEnter(Collision collision) {
 		if (stage == Stage.Rise || stage == Stage.Chase) {
 			stage = Stage.Fall;
 		}
 	}
 
-	// Checks if the player is within targeting range.
-	void OnTriggerEnter (Collider collider) {
+	/// <summary>
+	/// Checks if the player is within targeting range.
+	/// </summary>
+	/// <param name="collider">The collider that the book collided with.</param>
+	private void OnTriggerEnter(Collider collider) {
 		if (collider.tag == "Player") {
 			target = collider.GetComponent<Player> ();
 			targetingPlayer = true;
 		}
 	}
 
-	// Checks if the player has stepped outside targeting range.
-	void OnTriggerExit (Collider collider) {
+	/// <summary>
+	/// Checks if the player has stepped outside targeting range.
+	/// </summary>
+	/// <param name="collider">The collider that the book stopped collided with.</param>
+	private void OnTriggerExit(Collider collider) {
 		if (collider.tag == "Player") {
 			targetingPlayer = false;
 		}
 	}
 
-	// Resets the book.
+	/// <summary>
+	/// Resets the book.
+	/// </summary>
 	public void Reset () {
 		transform.position = startPosition;
 		stage = Stage.Idle;

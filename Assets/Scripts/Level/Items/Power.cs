@@ -1,15 +1,20 @@
-﻿using UnityEngine;
-using System.Collections;
-
-// A power-up for the player.
+﻿/// <summary>
+/// A power-up for the player.
+/// </summary>
 public interface Power {
 
-	// Does an action when the player presses the power-up trigger key.
-	void PowerKey ();
+	/// <summary>
+	/// Does an action when the player presses the power-up trigger key.
+	/// </summary>
+	void PowerKey();
 
-	// Removes the power-up from the player when hit.
-	void OnRemove ();
+	/// <summary>
+	/// Removes the power-up from the player when hit.
+	/// </summary>
+	void OnRemove();
 
-	// Removes the power-up from the player when the level is reset.
-	void OnReset ();
+	/// <summary>
+	/// Removes the power-up from the player when the level is reset.
+	/// </summary>
+	void OnReset();
 }

@@ -3,43 +3,60 @@ using System;
 using System.Collections;
 using System.Net;
 
-// Handles sending and receiving from the internet.
+/// <summary>
+/// Handles sending and receiving from the internet.
+/// </summary>
 public class NetworkingManager : MonoBehaviour {
 	
-	// Where to send and receive data from.
+	/// <summary> Where to send and receive data from. </summary>
+	[Tooltip("Where to send and receive data from.")]
 	public string url;
 
-	// The singleton instance of the networking manager.
+	/// <summary> The singleton instance of the networking manager. </summary>
 	public static NetworkingManager instance;
 
-	// Sets the singleton instance.
-	void Awake () {
+	/// <summary>
+	/// Sets the singleton instance.
+	/// </summary>
+	private void Awake() {
 		instance = this;
 	}
 
-	// Processes a string obtained from a URL.
-	public void ProcessStringFromURL (Action<string> OnGet) {
-		StartCoroutine(GetURL (OnGet));
+	/// <summary>
+	/// Processes a string obtained from a URL.
+	/// </summary>
+	/// <param name="OnGet">The process to run on the string obtained from the URL.</param>
+	public void ProcessStringFromURL(Action<string> OnGet) {
+		StartCoroutine(GetURL(OnGet));
 	}
 
-	// Processes a string obtained from a URL.
-	private IEnumerator GetURL (Action<string> OnGet) {
+	/// <summary>
+	/// Processes a string obtained from a URL.
+	/// </summary>
+	/// <param name="OnGet">The process to run on the string obtained from the specified URL.</param>
+	private IEnumerator GetURL(Action<string> OnGet) {
 		WWW www = new WWW(url);
 		yield return www;
 		OnGet(www.text);
 	}
 
-	// Posts a position to a URL.
-	public void PostPositionInURL (Vector3 position) {
+	/// <summary>
+	/// Posts a position to a URL.
+	/// </summary>
+	/// <param name="position">The position to post.</param>
+	public void PostPositionInURL(Vector3 position) {
 		WWWForm form = new WWWForm();
-		form.AddField ("x", position.x.ToString ());
-		form.AddField ("y", position.y.ToString ());
-		form.AddField ("z", position.z.ToString ());
-		PostURL (form);
+		form.AddField("x", position.x.ToString());
+		form.AddField("y", position.y.ToString());
+		form.AddField("z", position.z.ToString());
+		PostURL(form);
 	}
 
-	// Posts a form to a URL.
-	private IEnumerator PostURL (WWWForm form) {
+	/// <summary>
+	/// Posts a form to a URL.
+	/// </summary>
+	/// <param name="form">The form to post.</param>
+	private IEnumerator PostURL(WWWForm form) {
 		WWW www = new WWW(url, form);
 		yield return www;
 	}

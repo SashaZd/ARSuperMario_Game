@@ -1,9 +1,10 @@
-﻿using UnityEngine;
-using System.Collections;
-
-// Movement of entities.
+﻿/// <summary>
+/// Movement of entities.
+/// </summary>
 public interface Movement {
 	
-	// Resets the movement of the entity.
-	void Reset ();
+	/// <summary>
+	/// Resets the movement of the entity.
+	/// </summary>
+	void Reset();
 }

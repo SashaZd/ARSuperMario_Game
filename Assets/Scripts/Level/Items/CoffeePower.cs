@@ -1,32 +1,45 @@
 ﻿using UnityEngine;
-using System.Collections;
 
-// Power-up that speeds up the player.
+/// <summary>
+/// Power-up that speeds up the player.
+/// </summary>
 public class CoffeePower : MonoBehaviour, Power {
 
-	// Speeds up the player.
-	void Start () {
-		Player player = GetComponent<Player> ();
+	/// <summary>
+	/// Speeds up the player.
+	/// </summary>
+	private void Start() {
+		Player player = GetComponent<Player>();
 		player.baseMoveSpeed *= 2;
 		player.runSpeed *= 2;
 	}
 
-	// Do nothing.
+	/// <summary>
+	/// Does nothing.
+	/// </summary>
 	public void PowerKey () {
 	}
-	
-	// Slows the player down.
+
+	/// <summary>
+	/// Slows the player down.
+	/// </summary>
 	public void OnRemove () {
 		OnReset ();
 	}
-	
-	// Slows the player down.
+
+	/// <summary>
+	/// Slows the player down.
+	/// </summary>
 	public void OnReset () {
 		Player player = GetComponent<Player> ();
 		player.baseMoveSpeed /= 2;
 		player.runSpeed /= 2;
 	}
 
+	/// <summary>
+	/// Returns the name of the power-up.
+	/// </summary>
+	/// <returns>The name of the power-up.</returns>
 	public override string ToString () {
 		return "Coffee";
 	}

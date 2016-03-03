@@ -1,31 +1,37 @@
-﻿using UnityEngine;
-using System;
-
-// Makes the player grow in size and gain an extra hit.
+﻿/// <summary>
+/// Makes the player grow in size and gain an extra hit.
+/// </summary>
 public class Mushroom : Item {
 
-	// The movement speed of the mushroom.
-	public float moveSpeed = 0.005f;
-	// The pathing system for the mushroom.
-	PathMovement movement;
-	
-	// Use this for initialization.
-	protected override void Start () {
-		movement = GetComponent<PathMovement> ();
-		PathUtil.FindClosestPath (transform.position, movement);
-		base.Start ();
+	/// <summary> The movement speed of the mushroom. </summary>
+	private float moveSpeed = 0.005f;
+	/// <summary> The pathing system for the mushroom. </summary>
+	private PathMovement movement;
+
+	/// <summary>
+	/// Places the mushroom on the closest path.
+	/// </summary>
+	protected override void Start() {
+		movement = GetComponent<PathMovement>();
+		PathUtil.FindClosestPath(transform.position, movement);
+		base.Start();
 	}
 
-	// Makes the mushroom start moving after emerging from a question block.
-	public override void EmergeFromBlock () {
+	/// <summary>
+	/// Makes the mushroom start moving after emerging from a question block.
+	/// </summary>
+	public override void EmergeFromBlock() {
 		movement.moveSpeed = moveSpeed;
-		base.EmergeFromBlock ();
+		base.EmergeFromBlock();
 	}
 
-	// Increases the player's size.
-	public override void HitPlayer (Player player) {
-		if (player.GetComponent<MushroomPower> () == null) {
-			player.AddPower (player.gameObject.AddComponent<MushroomPower> ());
+	/// <summary>
+	/// Increases the player's size.
+	/// </summary>
+	/// <param name="player">The player hit by the mushroom.</param>
+	public override void HitPlayer(Player player) {
+		if (player.GetComponent<MushroomPower>() == null) {
+			player.AddPower(player.gameObject.AddComponent<MushroomPower>());
 		}
 	}
 }

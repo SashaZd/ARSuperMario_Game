@@ -3,75 +3,85 @@ using UnityEngine.SceneManagement;
 using System;
 using System.Collections.Generic;
 
-// Responds to keypresses to control the character.
+/// <summary>
+/// Responds to keypresses to control the character.
+/// </summary>
 public class Player : MonoBehaviour {
 
-	// Controls the player's movement along the ribbon path.
-	PathMovement pathMovement;
-	// The rigid body controlling the object's physics.
-	Rigidbody body;
-	// Renderer for displaying the player.
-	Renderer[] playerRenderers;
+	/// <summary> Controls the player's movement along the ribbon path. </summary>
+	private PathMovement pathMovement;
+	/// <summary> The rigid body controlling the object's physics. </summary>
+	private Rigidbody body;
+	/// <summary> Renderer for displaying the player. </summary>
+	private Renderer[] playerRenderers;
 	
-	// The normal walking speed of the player.
+	/// <summary> The normal walking speed of the player. </summary>
+	[Tooltip("The normal walking speed of the player.")]
 	public float baseMoveSpeed = 0.01f;
-	// The maximum running speed of the player.
+	/// <summary> The maximum running speed of the player. </summary>
+	[Tooltip("The maximum running speed of the player.")]
 	public float runSpeed;
-	// The amount that speed is incremented every tick when acclerating to run speed.
-	float speedIncrement;
-	// Whether the player can move around.
+	/// <summary> The amount that speed is incremented every tick when acclerating to run speed. </summary>
+	private float speedIncrement;
+	/// <summary> Whether the player can move around. </summary>
 	[HideInInspector]
 	public bool canMove;
 
-	// The initial velocity of the player's jump.
+	/// <summary> The initial velocity of the player's jump. </summary>
+	[Tooltip("The initial velocity of the player's jump.")]
 	public float jumpSpeed = 2.5f;
-	// Threshold for limiting jump height.
+	/// <summary> Threshold for limiting jump height. </summary>
+	[Tooltip("Threshold for limiting jump height.")]
 	public int baseMaxJumpTimer = 6;
-	// Timer for varying the player's jump height.
-	int jumpHeightTimer = 0;
-	// Whether the player is on the ground and can jump.
-	int groundCounter = 0;
+	/// <summary> Timer for varying the player's jump height. </summary>
+	private int jumpHeightTimer = 0;
+	/// <summary> Whether the player is on the ground and can jump. </summary>
+	private int groundCounter = 0;
 
-	// The amount of frames that the player will be invincible after being hit.
-	const int INVINCIBLEDELAY = 120;
-	// Timer for the player being invincible.
-	int invincibleTimer = 0;
+	/// <summary> The amount of frames that the player will be invincible after being hit. </summary>
+	private const int INVINCIBLEDELAY = 120;
+	/// <summary> Timer for the player being invincible. </summary>
+	private int invincibleTimer = 0;
 
-	// Ticks after the player has reached the goal.
-	int goalTick;
-	// The number of ticks to wait before resetting the level after winning.
-	const int MAXGOALTICKS = 60;
+	/// <summary> Ticks after the player has reached the goal. </summary>
+	private int goalTick;
+	/// <summary> The number of ticks to wait before resetting the level after winning. </summary>
+	private const int MAXGOALTICKS = 60;
 
-	// Whether the player is dead and in a dying animation.
-	bool dead = false;
+	/// <summary> Whether the player is dead and in a dying animation. </summary>
+	private bool dead = false;
 
-	// The current score of the player.
+	/// <summary> The current score of the player. </summary>
+	[Tooltip("The current score of the player.")]
 	public int score = 0;
-	// The current power-ups of the player.
-	List<Power> powers = new List<Power> ();
-	// The number of power-ups the player has lost in this tick.
-	int lostPowers = 0;
-	// The current scale of the player.
-	int size = 1;
+	/// <summary> The current power-ups of the player. </summary>
+	private List<Power> powers = new List<Power> ();
+	/// <summary> The number of power-ups the player has lost in this tick. </summary>
+	private int lostPowers = 0;
+	/// <summary> The current scale of the player. </summary>
+	private int size = 1;
 
-	// Timer for posting the player's position to the server.
-	int postTimer = 0;
-	// Time between posting the player's position to the server.
+	/// <summary> Timer for posting the player's position to the server. </summary>
+	private int postTimer = 0;
+	/// <summary> Time between posting the player's position to the server. </summary>
+	[Tooltip("Time between posting the player's position to the server.")]
 	public int postInterval = 10;
 
-	// The non-trigger collider on the player.
-	Collider physicsCollider;
+	/// <summary> The non-trigger collider on the player. </summary>
+	private Collider physicsCollider;
 
-	// The game state logger.
-	Tracker tracker;
+	/// <summary> The game state logger. </summary>
+	private Tracker tracker;
 
-	// The animator controlling the player model's animations.
-	Animator animator;
+	/// <summary> The animator controlling the player model's animations. </summary>
+	private Animator animator;
 
-	// Use this for initialization.
-	void Start () {
-		pathMovement = GetComponent<PathMovement> ();
-		body = GetComponent<Rigidbody> ();
+	/// <summary>
+	/// Initializes the player.
+	/// </summary>
+	private void Start() {
+		pathMovement = GetComponent<PathMovement>();
+		body = GetComponent<Rigidbody>();
 		playerRenderers = GetComponentsInChildren<SkinnedMeshRenderer>();
 
 		canMove = true;
@@ -81,9 +91,9 @@ public class Player : MonoBehaviour {
 			runSpeed = baseMoveSpeed * 1.5f;
 		}
 		speedIncrement = (runSpeed - baseMoveSpeed) / 30f;
-		pathMovement.ResetPosition ();
+		pathMovement.ResetPosition();
 		// Get the non-trigger collider on the player.
-		foreach (Collider collider in GetComponents<Collider> ()) {
+		foreach (Collider collider in GetComponents<Collider>()) {
 			if (!collider.isTrigger) {
 				physicsCollider = collider;
 				break;
@@ -93,12 +103,14 @@ public class Player : MonoBehaviour {
 		Cursor.lockState = CursorLockMode.Locked;
 		Cursor.visible = false;
 
-		tracker = Tracker.GetInstance ();
+		tracker = Tracker.Instance;
 		animator = GetComponentInChildren<Animator>();
 	}
 
-	// Update is called once per frame.
-	void FixedUpdate () {
+	/// <summary>
+	/// Moves the player according to input.
+	/// </summary>
+	private void FixedUpdate () {
 		if (GameMenuUI.paused) {
 			return;
 		}
@@ -110,7 +122,7 @@ public class Player : MonoBehaviour {
 			// Wait for the win animation before resetting the level.
 			if (goalTick > MAXGOALTICKS) {
 				goalTick = 0;
-				SceneManager.LoadScene (SceneManager.GetActiveScene().name);
+				SceneManager.LoadScene(SceneManager.GetActiveScene().name);
 			} else {
 				goalTick++;
 			}
@@ -123,32 +135,32 @@ public class Player : MonoBehaviour {
 			}
 			body.constraints = body.constraints | RigidbodyConstraints.FreezePositionY;
 			if (playerColor.a < Mathf.Epsilon) {
-				LevelManager.GetInstance ().ResetLevel ();
+				LevelManager.Instance.ResetLevel();
 			}
 		} else {
 			// Get player input.
-			bool forward = Input.GetKey (KeyCode.RightArrow) || Input.GetKey (KeyCode.D);
-			bool backward = Input.GetKey (KeyCode.LeftArrow) || Input.GetKey (KeyCode.A);
-			bool jump = Input.GetKey (KeyCode.Space) || Input.GetKey (KeyCode.UpArrow) || Input.GetKey (KeyCode.W);
-			bool reset = Input.GetKey (KeyCode.R);
-			bool run = Input.GetKey (KeyCode.H);
-			bool powerKey = Input.GetKey (KeyCode.Return);
+			bool forward = Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D);
+			bool backward = Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A);
+			bool jump = Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W);
+			bool reset = Input.GetKey(KeyCode.R);
+			bool run = Input.GetKey(KeyCode.H);
+			bool powerKey = Input.GetKey(KeyCode.Return);
 
 			bool moving = false;
 			if (canMove) {
 				if (forward ^ backward) {
 					moving = pathMovement.MoveAlongPath (forward);
-					LevelManager.GetInstance ().pathRendererList.CheckList (this, forward);
+					LevelManager.Instance.pathRendererList.CheckList(this, forward);
 				}
 
-				UpdateRun (run && (forward ^ backward));
+				UpdateRun(run && (forward ^ backward));
 
-				Jump (jump);
+				Jump(jump);
 			}
-			animator.SetBool ("moving", moving);
-			animator.SetBool ("running", run && moving);
+			animator.SetBool("moving", moving);
+			animator.SetBool("running", run && moving);
 
-			UpdateInvincible ();
+			UpdateInvincible();
 
 			// Terminal velocity
 			if (-body.velocity.y > jumpSpeed) {
@@ -168,37 +180,46 @@ public class Player : MonoBehaviour {
 			}
 
 			if (reset) {
-				if (Input.GetKey (KeyCode.LeftShift)) {
-					SceneManager.LoadScene (SceneManager.GetActiveScene().name);
+				if (Input.GetKey(KeyCode.LeftShift)) {
+					SceneManager.LoadScene(SceneManager.GetActiveScene().name);
 				} else {
-					LevelManager.GetInstance ().ResetLevel ();
+					LevelManager.Instance.ResetLevel();
 				}
 			}
 
-			if (PathUtil.OnFloor (gameObject)) {
-				KillPlayer ();
+			if (PathUtil.OnFloor(gameObject)) {
+				KillPlayer();
 			}
 		}
 	}
 
-	// Checks when the player collides with certain objects.
-	public void OnCollisionEnter (Collision collision) {
+	/// <summary>
+	/// Checks when the player collides with certain objects.
+	/// </summary>
+	/// <param name="collision">The collision that the player was involved in.</param>
+	private void OnCollisionEnter(Collision collision) {
 		if (collision.collider.tag == "Finish") {
-			HitGoal ();
+			HitGoal();
 		}
 	}
 
-	// Marks the player as grounded.
-	public void OnTriggerEnter (Collider collider) {
-		if (isGround (collider.tag)) {
+	/// <summary>
+	/// Marks the player as grounded.
+	/// </summary>
+	/// <param name="collider">The collider that the player hit.</param>
+	private void OnTriggerEnter(Collider collider) {
+		if (isGround(collider.tag)) {
 			groundCounter++;
-			animator.SetBool ("jumping", false);
+			animator.SetBool("jumping", false);
 		}
 	}
 
-	// Marks the player as airborne.
-	public void OnTriggerExit (Collider collider) {
-		if (isGround (collider.tag)) {
+	/// <summary>
+	/// Marks the player as airborne.
+	/// </summary>
+	/// <param name="collider">The collider that the player is no longer hitting</param>
+	private void OnTriggerExit(Collider collider) {
+		if (isGround(collider.tag)) {
 			if (groundCounter > 0) {
 				groundCounter--;
 			}
@@ -206,22 +227,30 @@ public class Player : MonoBehaviour {
 	}
 
 	// Checks whether the collided object's tag is ground or not.
-	bool isGround (string tag) {
+	/// <summary>
+	/// Checks whether the collided object's tag is ground or not.
+	/// </summary>
+	/// <returns>Whether the collided object's tag is ground or not.</returns>
+	/// <param name="tag">The tag of the collided object.</param>
+	private bool isGround (string tag) {
 		return tag != "Enemy" && tag != "Item" && tag != "Weapon";
 	}
 
-	// Handles the player jumping.
-	void Jump (bool isJumping) {
+	/// <summary>
+	/// Handles the player jumping.
+	/// </summary>
+	/// <param name="isJumping">Whether the jump key is pressed.</param>
+	private void Jump(bool isJumping) {
 		// Varies the player's jump height based on movement speed and held jump button.
 		if (isJumping && jumpHeightTimer < baseMaxJumpTimer * Mathf.Min (1.5f, baseMoveSpeed / pathMovement.moveSpeed)) {
 			bool incremented = false;
 			if (groundCounter > 0) {
 				jumpHeightTimer++;
 				tracker.logAction("Jumped.");
-				animator.SetBool ("jumping", true);
+				animator.SetBool("jumping", true);
 			}
 			if (jumpHeightTimer > 0 && body.velocity.y > -0.01f) {
-				body.velocity = PathUtil.SetY (body.velocity, jumpSpeed);
+				body.velocity = PathUtil.SetY(body.velocity, jumpSpeed);
 				groundCounter = 0;
 				if (!incremented) {
 					jumpHeightTimer++;
@@ -234,8 +263,11 @@ public class Player : MonoBehaviour {
 		}
 	}
 
-	// Speeds up the player if running. Reverts back to normal speed if not.
-	void UpdateRun (bool isRunning) {
+	/// <summary>
+	/// Speeds up the player if running. Reverts back to normal speed if not.
+	/// </summary>
+	/// <param name="isRunning">Whether the run key is pressed.</param>
+	private void UpdateRun(bool isRunning) {
 		if (isRunning) {
 			if (pathMovement.moveSpeed < runSpeed) {
 				pathMovement.moveSpeed += speedIncrement;
@@ -247,8 +279,10 @@ public class Player : MonoBehaviour {
 		}
 	}
 
-	// Handles invincibility frames after being hit) {
-	void UpdateInvincible () {
+	/// <summary>
+	/// Handles invincibility frames after being hit.
+	/// </summary>
+	private void UpdateInvincible() {
 		if (invincibleTimer > 0) {
 			invincibleTimer--;
 			bool rendererEnabled;
@@ -263,86 +297,111 @@ public class Player : MonoBehaviour {
 		}
 	}
 
-	// Causes the player to bounce after stomping on an enemy.
-	// Also increases the player's score.
-	public void StompEnemy () {
-		Vector3 setVelocity = new Vector3 (body.velocity.x, jumpSpeed, body.velocity.z);
+	/// <summary>
+	/// Causes the player to bounce after stomping on an enemy.
+	/// Also increases the player's score.
+	/// </summary>
+	public void StompEnemy() {
+		Vector3 setVelocity = new Vector3(body.velocity.x, jumpSpeed, body.velocity.z);
 		body.velocity = setVelocity;
 		jumpHeightTimer++;
 		score += 100;
 	}
 
-	// Plays an animation upon reaching the goal.
-	public void HitGoal () {
-		tracker.logAction ("Won level.");
+	/// <summary>
+	/// Plays an animation upon reaching the goal.
+	/// </summary>
+	private void HitGoal() {
+		tracker.logAction("Won level.");
 		body.useGravity = false;
 		body.velocity = Vector3.up * jumpSpeed;
 		goalTick = 1;
 		physicsCollider.enabled = false;
-		ResetAnimation ();
+		ResetAnimation();
 	}
 
-	// Sets the size of the player.
-	public void SetSize (int newSize) {
+	/// <summary>
+	/// Sets the size of the player.
+	/// </summary>
+	/// <param name="newSize">The new size of the player.</param>
+	public void SetSize(int newSize) {
 		float ratio = (float)newSize / (float)size;
-		PathUtil.ScaleY (transform, ratio);
+		PathUtil.ScaleY(transform, ratio);
 		// Adjust the position of the player so that the lower bound is still at the same height.
-		PathUtil.SetY (transform, transform.position.y + physicsCollider.bounds.extents.y * Mathf.Log (ratio, 2) * 1.01f);
+		PathUtil.SetY(transform, transform.position.y + physicsCollider.bounds.extents.y * Mathf.Log(ratio, 2) * 1.01f);
 		size = newSize;
-		pathMovement.UpdateGroundOffset ();
+		pathMovement.UpdateGroundOffset();
 	}
 
-	// Reduces the player's size. Kills the player if the size is at a minimum.
-	public void TakeDamage () {
+	/// <summary>
+	/// Reduces the player's size. Kills the player if the size is at a minimum.
+	/// </summary>
+	public void TakeDamage() {
 		if (invincibleTimer == 0) {
 			if (powers.Count == 0) {
-				KillPlayer ();
+				KillPlayer();
 			} else {
-				tracker.logAction ("Damaged player.");
-				int removeIndex = RandomUtil.RandomInt (0, powers.Count);
-				LosePower (powers[removeIndex]);
+				tracker.logAction("Damaged player.");
+				int removeIndex = RandomUtil.RandomInt(0, powers.Count);
+				LosePower(powers[removeIndex]);
 				invincibleTimer = INVINCIBLEDELAY;
 			}
 		}
 	}
 
-	// Kills the player and resets the level.
-	public void KillPlayer () {
-		tracker.logAction ("Killed player");
+	/// <summary>
+	/// Kills the player and resets the level.
+	/// </summary>
+	public void KillPlayer() {
+		tracker.logAction("Killed player");
 		dead = true;
 		animator.speed = 0;
 	}
 
-	// Adds a power-up to the player.
+	/// <summary>
+	/// Adds a power-up to the player.
+	/// </summary>
+	/// <param name="newPower">The power-up to add to the player.</param>
 	public void AddPower (Power newPower) {
-		tracker.logAction (newPower.ToString () + " power added.");
-		powers.Add (newPower);
+		tracker.logAction(newPower.ToString() + " power added.");
+		powers.Add(newPower);
 	}
 
-	// Removes a power from the player.
-	public void LosePower (Power power) {
+	/// <summary>
+	/// Removes a power from the player.
+	/// </summary>
+	/// <param name="power">The power to remove from the player.</param>
+	public void LosePower(Power power) {
 		if (power != null) {
-			power.OnRemove ();
-			tracker.logAction (power.ToString () + " power removed.");
-			powers.Remove (power);
+			power.OnRemove();
+			tracker.logAction(power.ToString() + " power removed.");
+			powers.Remove(power);
 			lostPowers++;
-			Destroy ((MonoBehaviour)power);
+			Destroy((MonoBehaviour)power);
 		}
 	}
 
-	// Returns true if the player has won the level.
-	public bool HasWon () {
+	/// <summary>
+	/// Returns true if the player has won the level.
+	/// </summary>
+	/// <returns>True if the player has won the level.</returns>
+	private bool HasWon() {
 		return goalTick > 0;
 	}
 
-	// Gets the current path that the player is on.
+	/// <summary>
+	/// Gets the current path that the player is on.
+	/// </summary>
+	/// <returns>The current path that the player is on.</returns>
 	public PathComponent GetCurrentPath() {
 		return pathMovement.currentPath;
 	}
 
-	// Resets the player when the level restarts.
-	public void Reset () {
-		pathMovement.ResetPosition ();
+	/// <summary>
+	/// Resets the player when the level restarts.
+	/// </summary>
+	public void Reset() {
+		pathMovement.ResetPosition();
 		body.useGravity = true;
 		body.velocity = Vector3.zero;
 		body.constraints = body.constraints & ~RigidbodyConstraints.FreezePositionY;
@@ -350,10 +409,10 @@ public class Player : MonoBehaviour {
 		score = 0;
 		jumpHeightTimer = 0;
 		foreach (Power power in powers) {
-			power.OnReset ();
-			Destroy ((MonoBehaviour)power);
+			power.OnReset();
+			Destroy((MonoBehaviour)power);
 		}
-		powers.Clear ();
+		powers.Clear();
 		invincibleTimer = 0;
 		foreach (Renderer playerRenderer in playerRenderers) {
 			playerRenderer.enabled = true;
@@ -364,15 +423,17 @@ public class Player : MonoBehaviour {
 		canMove = true;
 		dead = false;
 		physicsCollider.enabled = true;
-		ResetAnimation ();
+		ResetAnimation();
 	}
 
-	// Resets the player's animation to an idle state.
+	/// <summary>
+	/// Resets the player's animation to an idle state.
+	/// </summary>
 	private void ResetAnimation () {
-		animator.SetBool ("moving", false);
-		animator.SetBool ("running", false);
-		animator.SetBool ("jumping", false);
-		animator.SetTrigger ("reset");
+		animator.SetBool("moving", false);
+		animator.SetBool("running", false);
+		animator.SetBool("jumping", false);
+		animator.SetTrigger("reset");
 		animator.speed = 1;
 	}
 }

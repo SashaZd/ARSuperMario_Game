@@ -3,54 +3,66 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-// Tracks player and entity movement.
+/// <summary>
+/// Tracks player and entity movement.
+/// </summary>
 public class Tracker : MonoBehaviour {
 
-	// The singleton tracker instance.
+	/// <summary> The singleton tracker instance. </summary>
 	private static Tracker instance;
+	/// <summary> The singleton tracker instance. </summary>
+	public static Tracker Instance {
+		get {
+			if (instance == null) {
+				instance = GameObject.FindObjectOfType<Tracker>();
+			}
+			return instance;
+		}
+	}
 
-	// The level manager in the scene.
-	LevelManager manager;
+	/// <summary> The level manager in the scene. </summary>
+	private LevelManager manager;
 
-	// The name of the file to write to.
+	/// <summary> The name of the file to write to. </summary>
+	[Tooltip("The name of the file to write to.")]
 	public string filePath = "Assets/Tracking/";
-	// The number of frames to wait before recording a state.
+	/// <summary> The number of frames to wait before recording a state. </summary>
+	[Tooltip("The number of frames to wait before recording a state.")]
 	public int interval;
-	// Timer for keeping track of state recording.
-	int intervalTimer;
+	/// <summary> Timer for keeping track of state recording. </summary>
+	private int intervalTimer;
 
-	// The log file.
-	StreamWriter file;
+	/// <summary> The log file. </summary>
+	private StreamWriter file;
 
-	// Whether player logging is enabled.
+	/// <summary> Whether player logging is enabled. </summary>
+	[Tooltip("Whether player logging is enabled.")]
 	public bool loggingEnabled = true;
 
-	// Sets the tracker instance.
-	void Awake () {
+	/// <summary>
+	/// Sets the tracker instance.
+	/// </summary>
+	private void Awake() {
 		instance = this;
 	}
 
-	// Use this for initialization.
-	void Start () {
-		manager = LevelManager.GetInstance ();
+	/// <summary>
+	/// Gets the level manager instance.
+	/// </summary>
+	private void Start() {
+		manager = LevelManager.Instance;
 	}
-	
-	// Gets the instance of the tracker.
-	public static Tracker GetInstance () {
-		if (instance == null) {
-			instance = GameObject.FindObjectOfType<Tracker>();
-		}
-		return instance;
-	}
-	
-	// Update is called once per frame.
-	void Update () {
+
+	/// <summary>
+	/// Periodically logs the positions of entities.
+	/// </summary>
+	private void Update () {
 		intervalTimer++;
 		if (intervalTimer > interval) {
 			intervalTimer = 0;
 			float time = Time.time;
 			if (manager.player != null) {
-				logEntity (manager.player, time);
+				logEntity(manager.player, time);
 				foreach (Enemy enemy in manager.enemies) {
 					if (enemy != null && enemy.gameObject.activeSelf) {
 						logEntity(enemy, time);
@@ -65,46 +77,61 @@ public class Tracker : MonoBehaviour {
 		}
 	}
 
-	// Writes an entity's state to the log.
-	void logEntity(MonoBehaviour entity, float time) {
-			string name = entity.name.Replace ("(Clone)", "");
-			Vector3 position = entity.transform.position;
-			WriteToFile (time + " " + name + " " + position);
+	/// <summary>
+	/// Writes an entity's state to the log.
+	/// </summary>
+	/// <param name="entity">The entity to log.</param></param>
+	/// <param name="time">The current game time.</param>
+	private void logEntity(MonoBehaviour entity, float time) {
+		string name = entity.name.Replace("(Clone)", "");
+		Vector3 position = entity.transform.position;
+		WriteToFile(time + " " + name + " " + position);
 	}
 
-	// Writes an action to the log.
+	/// <summary>
+	/// Writes an action to the log.
+	/// </summary>
+	/// <param name="action">The action to log.</param>
 	public void logAction(string action) {
-		WriteToFile (Time.time + " " + action);
+		WriteToFile(Time.time + " " + action);
 	}
 
-	// Creates a new log file and writes the level JSON data to it.
+	/// <summary>
+	/// Creates a new log file and writes the level JSON data to it.
+	/// </summary>
+	/// <param name="text">The level JSON data to log.</param>
 	public void logJSON(string text) {
 		if (!loggingEnabled) {
 			return;
 		}
 
 		if (file != null) {
-			file.Close ();
+			file.Close();
 		} else {
 			System.IO.Directory.CreateDirectory(filePath);
 		}
-		string date = DateTime.Now.ToString ().Replace (":", "").Replace ("/", "").Replace (" ", "_");
+		string date = DateTime.Now.ToString().Replace(":", "").Replace("/", "").Replace(" ", "_");
 
-		file = File.CreateText (filePath + "log_" + date);
-		WriteToFile (text);
+		file = File.CreateText(filePath + "log_" + date);
+		WriteToFile(text);
 	}
 
-	// Writes text to the current log file.
+	/// <summary>
+	/// Writes text to the current log file.
+	/// </summary>
+	/// <param name="text">The text to log.</param>
 	private void WriteToFile (String text) {
 		if (loggingEnabled && file != null) {
-			file.WriteLine (text);
+			file.WriteLine(text);
 		}
 	}
 
-	// Saves the log if the user quits the game.
+	/// <summary>
+	/// Saves the log if the user quits the game.
+	/// </summary>
 	void OnApplicationQuit() {
 		if (file != null) {
-			file.Close ();
+			file.Close();
 		}
 	}
 }

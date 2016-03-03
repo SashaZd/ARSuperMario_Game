@@ -1,81 +1,97 @@
 ﻿using UnityEngine;
 using System;
 
-// Controls movement along the ribbon path.
+/// <summary>
+/// Controls movement along the ribbon path.
+/// </summary>
 public class PathMovement : MonoBehaviour {
 
-	// The part of the path where the object begins the level on.
+	/// <summary> The part of the path where the object begins the level on. </summary>
+	[Tooltip("The part of the path where the object begins the level on.")]
 	public PathComponent startPath;
-	// How far along the path the object is at the start of the level.
-	public float startProgress = 0;
-	// Where the object begins the level at.
-	Vector3 startPosition;
-	// Whether the object has been placed on the ribbon path.
-	bool initiated = false;
+	/// <summary> How far along the path the object is at the start of the level. </summary>
+	[SerializeField]
+	[Tooltip("How far along the path the object is at the start of the level.")]
+	private float startProgress = 0;
+	/// <summary> Where the object begins the level at. </summary>
+	private Vector3 startPosition;
+	/// <summary> Whether the object has been placed on the ribbon path. </summary>
+	private bool initiated = false;
 
-	// The part of the level that the object is currently on. 
+	/// <summary> The part of the level that the object is currently on. </summary>
+	[Tooltip("The part of the level that the object is currently on.")]
 	public PathComponent currentPath;
-	// How far along the path the object is.
+	/// <summary> How far along the path the object is. </summary>
+	[Tooltip("How far along the path the object is.")]
 	public float pathProgress = 0;
 
-	// The speed that the object moves at per tick.
+	/// <summary> The speed that the object moves at per tick. </summary>
+	[Tooltip("The speed that the object moves at per tick.")]
 	public float moveSpeed = 0.01f;
-	// The rigid body controlling the object's physics.
-	Rigidbody body;
-	// The distance from the center of the object to the ground while grounded.
-	float groundOffset;
-	// The distance from the center of the object to its side.
-	float sideOffset;
-	// The number of places on the object to check for side collisions.
-	const int NUMSIDECHECKS = 30;
-	// Extra distance to count as a side collision.
-	const float COLLISIONOFFSET = 0.001f;
-	// The layers to detect as collisions.
-	public LayerMask collisionLayers;
-	// Whether the object rotates at a constant speed.
-	bool rotates = false;
-	
-	// Use this for initialization.
-	void Start () {
-		body = GetComponent<Rigidbody> ();
+	/// <summary> The rigid body controlling the object's physics. </summary>
+	private Rigidbody body;
+	/// <summary> The distance from the center of the object to the ground while grounded. </summary>
+	private float groundOffset;
+	/// <summary> The distance from the center of the object to the ground while grounded. </summary>
+	public float GroundOffset {
+		get {return groundOffset;}
+	}
+	/// <summary> The distance from the center of the object to its side. </summary>
+	private float sideOffset;
+	/// <summary> The distance from the center of the object to its side. </summary>
+	public float SideOffset {
+		get {return sideOffset;}
+	}
+	/// <summary> The number of places on the object to check for side collisions. </summary>
+	private const int NUMSIDECHECKS = 30;
+	/// <summary> Extra distance to count as a side collision. </summary>
+	private const float COLLISIONOFFSET = 0.001f;
+	/// <summary> The layers to detect as collisions. </summary>
+	[SerializeField]
+	[Tooltip("The layers to detect as collisions.")]
+	private LayerMask collisionLayers;
+	/// <summary> Whether the object rotates at a constant speed. </summary>
+	private bool rotates = false;
+
+	/// <summary>
+	/// Initializes the path movement.
+	/// </summary>
+	private void Start() {
+		body = GetComponent<Rigidbody>();
 		startProgress = pathProgress;
 		if (startPath != null) {
-			ResetPosition ();
+			ResetPosition();
 		}
-		UpdateGroundOffset ();
-		sideOffset = GetComponent<Collider> ().bounds.extents.z;
-		transform.eulerAngles = Vector3.up * Vector3.Angle(Vector3.right, currentPath.GetDirection (true));
-		rotates = GetComponent<Rotate> () != null;
+		UpdateGroundOffset();
+		sideOffset = GetComponent<Collider>().bounds.extents.z;
+		transform.eulerAngles = Vector3.up * Vector3.Angle(Vector3.right, currentPath.GetDirection(true));
+		rotates = GetComponent<Rotate>() != null;
 	}
 
-	// Update is called once per frame.
-	void Update () {
+	/// <summary>
+	/// Checks if the movement needs to be reset.
+	/// </summary>
+	private void Update() {
 		if (!initiated && startPath != null) {
-			ResetPosition ();
+			ResetPosition();
 		}
 	}
 
-	// Finds the offset from the entity's center to the bottom of the entity.
-	public void UpdateGroundOffset () {
-		groundOffset = GetComponent<Collider> ().bounds.extents.y;
+	/// <summary>
+	/// Finds the offset from the entity's center to the bottom of the entity.
+	/// </summary>
+	public void UpdateGroundOffset() {
+		groundOffset = GetComponent<Collider>().bounds.extents.y;
 	}
 
-	// Gets the offset between the center of the player and the ground while grounded.
-	public float GetGroundOffset () {
-		return groundOffset;
-	}
-
-	// Gets the offset between the center of the player and the side of the player.
-	public float GetSideOffset () {
-		return sideOffset;
-	}
-
-	// Resets the position of the object to its initial position.
-	public void ResetPosition () {
+	/// <summary>
+	/// Resets the position of the object to its initial position.
+	/// </summary>
+	public void ResetPosition() {
 		currentPath = startPath;
 		pathProgress = startProgress;
 		if (body == null) {
-			body = GetComponent<Rigidbody> ();
+			body = GetComponent<Rigidbody>();
 		}
 		body.velocity = Vector3.zero;
 
@@ -85,7 +101,7 @@ public class PathMovement : MonoBehaviour {
 			if (body.useGravity) {
 				RaycastHit hit;
 				startPosition.y = PathUtil.ceilingHeight;
-				Physics.Raycast (startPosition, Vector3.down, out hit, PathUtil.ceilingHeight * 1.1f);
+				Physics.Raycast(startPosition, Vector3.down, out hit, PathUtil.ceilingHeight * 1.1f);
 				startPosition.y = hit.point.y + groundOffset + 0.25f;
 			} else {
 				startPosition.y = transform.position.y;
@@ -93,18 +109,23 @@ public class PathMovement : MonoBehaviour {
 			initiated = true;
 		}
 		transform.position = startPosition;
-		transform.eulerAngles = Vector3.up * Vector3.Angle(Vector3.right, currentPath.GetDirection (true));
+		transform.eulerAngles = Vector3.up * Vector3.Angle(Vector3.right, currentPath.GetDirection(true));
 	}
 
-	// Moves the object forward along the ribbon path.
-	// Returns whether the object was able to move.
-	public bool MoveAlongPath () {
-		return MoveAlongPath (true);
+	/// <summary>
+	/// Moves the object forward along the ribbon path.
+	/// </summary>
+	/// <returns>Whether the object was able to move.</returns>
+	private bool MoveAlongPath() {
+		return MoveAlongPath(true);
 	}
 
-	// Moves the object along the ribbon path.
-	// Returns whether the object was able to move.
-	public bool MoveAlongPath (bool forward) {
+	/// <summary>
+	/// Moves the object along the ribbon path.
+	/// </summary>
+	/// <returns>Whether the object was able to move.</returns>
+	/// <param name="forward">Whether to move the object forward along the path.</param>
+	public bool MoveAlongPath(bool forward) {
 		float moveDistance = moveSpeed;
 
 		// Check for side collision.
@@ -113,20 +134,20 @@ public class PathMovement : MonoBehaviour {
 		RaycastHit hit;
 		int loopStart = 1;
 		// Test for sloped ground.
-		if (Physics.Raycast (sidePosition, currentPath.GetDirection (forward), out hit, sideOffset + moveSpeed + COLLISIONOFFSET, collisionLayers)) {
+		if (Physics.Raycast(sidePosition, currentPath.GetDirection (forward), out hit, sideOffset + moveSpeed + COLLISIONOFFSET, collisionLayers)) {
 			float groundDistance = hit.distance;
 			sidePosition.y += sideIncrement;
 			loopStart++;
-			if (Physics.Raycast (sidePosition, currentPath.GetDirection (forward), out hit, sideOffset + moveSpeed + COLLISIONOFFSET, collisionLayers)) {
-				if (hit.distance <= groundDistance || Mathf.Atan (sideIncrement / (hit.distance - groundDistance)) > 30 * Mathf.Deg2Rad) {
+			if (Physics.Raycast(sidePosition, currentPath.GetDirection (forward), out hit, sideOffset + moveSpeed + COLLISIONOFFSET, collisionLayers)) {
+				if (hit.distance <= groundDistance || Mathf.Atan(sideIncrement / (hit.distance - groundDistance)) > 30 * Mathf.Deg2Rad) {
 					return false;
 				}
 			}
 		}
 		// Test the rest of the vertical distance for blockage.
 		for (int i = loopStart; i < NUMSIDECHECKS; i++) {
-			if (Physics.Raycast (sidePosition, currentPath.GetDirection (forward), out hit, sideOffset + moveSpeed + COLLISIONOFFSET, collisionLayers)) {
-				moveDistance = Mathf.Min (moveDistance, hit.distance - sideOffset - COLLISIONOFFSET);
+			if (Physics.Raycast(sidePosition, currentPath.GetDirection (forward), out hit, sideOffset + moveSpeed + COLLISIONOFFSET, collisionLayers)) {
+				moveDistance = Mathf.Min(moveDistance, hit.distance - sideOffset - COLLISIONOFFSET);
 				if (moveDistance < Mathf.Epsilon) {
 					return false;
 				}
@@ -134,7 +155,7 @@ public class PathMovement : MonoBehaviour {
 			sidePosition.y += sideIncrement;
 		}
 
-		pathProgress = currentPath.IncrementPathProgress (pathProgress, moveDistance, forward);
+		pathProgress = currentPath.IncrementPathProgress(pathProgress, moveDistance, forward);
 
 		// Check if the object has moved past the path's bounds.
 		// Switch to the next/previous path if so.
@@ -155,15 +176,15 @@ public class PathMovement : MonoBehaviour {
 			} else {
 				float underflow = currentPath.GetMagnitudeFromProgress(-pathProgress);
 				currentPath = currentPath.previousPath;
-				pathProgress = currentPath.GetProgressFromMagnitude(currentPath.GetMagnitude() - underflow);
+				pathProgress = currentPath.GetProgressFromMagnitude(currentPath.Magnitude - underflow);
 			}
 		}
 
 		// Move the object.
-		PathUtil.SetXZ (transform, currentPath.GetPositionInPath (pathProgress));
+		PathUtil.SetXZ(transform, currentPath.GetPositionInPath(pathProgress));
 		// Rotate the object to face forward.
 		if (!rotates) {
-			Vector3 direction = currentPath.GetDirection (forward);
+			Vector3 direction = currentPath.GetDirection(forward);
 			float angle = Mathf.Atan2 (direction.x, direction.z) * 180 / Mathf.PI;
 			Vector3 facing = Vector3.up * angle;
 			transform.eulerAngles = facing;

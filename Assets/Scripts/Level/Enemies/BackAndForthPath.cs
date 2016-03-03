@@ -1,36 +1,43 @@
 ﻿using UnityEngine;
-using System.Collections;
 
-// Moves along the path until hitting a barrier, then turns around.
+/// <summary>
+/// Moves along the path until hitting a barrier, then turns around.
+/// </summary>
 public class BackAndForthPath : MonoBehaviour, Movement {
 
-	// Controls the entity's movement along the ribbon path.
-	PathMovement pathMovement;
-	// Whether the entity is moving forwards.
-	bool forward;
-	// The direction the entity is moving at the start of the level.
-	bool startDirection;
-	
-	// Use this for initialization.
-	void Start () {
-		startDirection = RandomUtil.RandomBoolean ();
+	/// <summary> Controls the entity's movement along the ribbon path. </summary>
+	private PathMovement pathMovement;
+	/// <summary> Whether the entity is moving forwards. </summary>
+	private bool forward;
+	/// <summary> The direction the entity is moving at the start of the level. </summary>
+	private bool startDirection;
+
+	/// <summary>
+	/// Initializes the movement.
+	/// </summary>
+	private void Start() {
+		startDirection = RandomUtil.RandomBoolean();
 		forward = startDirection;
-		pathMovement = GetComponent<PathMovement> ();
+		pathMovement = GetComponent<PathMovement>();
 	}
-	
-	// Update is called once per frame.
-	void Update () {
+
+	/// <summary>
+	/// Moves the object along the path.
+	/// </summary>
+	private void Update() {
 		if (GameMenuUI.paused) {
 			return;
 		}
-		if (!pathMovement.MoveAlongPath (forward)) {
+		if (!pathMovement.MoveAlongPath(forward)) {
 			forward = !forward;
 		}
 	}
 
-	// Resets the entity's direction and position.
-	public void Reset () {
+	/// <summary>
+	/// Resets the entity's direction and position.
+	/// </summary>
+	public void Reset() {
 		forward = startDirection;
-		pathMovement.ResetPosition ();
+		pathMovement.ResetPosition();
 	}
 }

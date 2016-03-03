@@ -1,30 +1,37 @@
 ﻿using UnityEngine;
-using System.Collections;
 
-// A block that can be hit from underneath to reveal an item.
+/// <summary>
+/// A block that can be hit from underneath to reveal an item.
+/// </summary>
 public class QuestionBlock : Block {
 
-	// Whether the block has been hit by the player.
-	bool wasHit = false;
-	// The material the question block appears as before being hit.
-	Material startMaterial;
-	// The material the question block will take on after being hit.
-	public Material hitMaterial;
+	/// <summary> Whether the block has been hit by the player. </summary>
+	private bool wasHit = false;
+	/// <summary> The material the question block appears as before being hit. </summary>
+	private Material startMaterial;
+	/// <summary> The material the question block will take on after being hit. </summary>
+	[SerializeField]
+	[Tooltip("The material the question block will take on after being hit.")]
+	private Material hitMaterial;
 
-	// The amount to increase the object's height by every tick.
-	float contentIncrement;
-	// Timer used to animate contents coming out of the block.
-	float contentHeight = 0;
-	// The object that is emerging from the block.
-	Item contentObject;
+	/// <summary> The amount to increase the object's height by every tick. </summary>
+	private float contentIncrement;
+	/// <summary> Timer used to animate contents coming out of the block. </summary>
+	private float contentHeight = 0;
+	/// <summary> The object that is emerging from the block. </summary>
+	private Item contentObject;
 
-	// Use this for initialization.
-	void Start () {
-		startMaterial = GetComponent<Renderer> ().material;
+	/// <summary>
+	/// Initializes the question block material.
+	/// </summary>
+	private void Start() {
+		startMaterial = GetComponent<Renderer>().material;
 	}
 
-	// Update is called once per frame.
-	void Update () {
+	/// <summary>
+	/// Animates the contents of the block emerging.
+	/// </summary>
+	private void Update() {
 		if (GameMenuUI.paused) {
 			return;
 		}
@@ -33,39 +40,43 @@ public class QuestionBlock : Block {
 			contentHeight += contentIncrement;
 			if (contentHeight > contentIncrement * 60) {
 				contentIncrement = 0;
-				Rigidbody body = contentObject.GetComponent<Rigidbody> ();
+				Rigidbody body = contentObject.GetComponent<Rigidbody>();
 				if (body) {
 					body.useGravity = true;
 				}
-				contentObject.GetComponent<Collider> ().enabled = true;
-				contentObject.GetComponent<Item> ().EmergeFromBlock ();
+				contentObject.GetComponent<Collider>().enabled = true;
+				contentObject.GetComponent<Item>().EmergeFromBlock();
 				contentObject = null;
 			}
 		}
 	}
 
-	// Spawns the contents of the block above the block.
-	public override void HitBlock () {
+	/// <summary>
+	/// Spawns the contents of the block above the block.
+	/// </summary>
+	public override void HitBlock() {
 		if (!wasHit) {
-			Tracker.GetInstance ().logAction ("Block hit");
-			contentObject = Instantiate (contents);
+			Tracker.Instance.logAction("Block hit");
+			contentObject = Instantiate(contents);
 			contentObject.transform.position = transform.position;
-			contentIncrement = GetComponent<Collider> ().bounds.extents.y / 30;
-			Rigidbody body = contentObject.GetComponent<Rigidbody> ();
+			contentIncrement = GetComponent<Collider>().bounds.extents.y / 30;
+			Rigidbody body = contentObject.GetComponent<Rigidbody>();
 			if (body) {
 			    body.useGravity = false;
-			    contentObject.GetComponent<PathMovement> ().moveSpeed = 0;
+			    contentObject.GetComponent<PathMovement>().moveSpeed = 0;
 			}
-			contentObject.GetComponent<Collider> ().enabled = false;
+			contentObject.GetComponent<Collider>().enabled = false;
 			wasHit = true;
-			GetComponent<Renderer> ().material = hitMaterial;
+			GetComponent<Renderer>().material = hitMaterial;
 		}
 	}
 
-	// Regenerates the contents of the block.
-	public override void Reset () {
+	/// <summary>
+	/// Regenerates the contents of the block.
+	/// </summary>
+	public override void Reset() {
 		wasHit = false;
-		GetComponent<Renderer> ().material = startMaterial;
+		GetComponent<Renderer>().material = startMaterial;
 		contentIncrement = 0;
 		contentHeight = 0;
 		contentObject = null;

@@ -1,27 +1,30 @@
 ﻿using UnityEngine;
-using System.Collections;
 
-// A melee weapon the player can use.
+/// <summary>
+/// A melee weapon the player can use.
+/// </summary>
 public class FlySwatter : MonoBehaviour {
 
-	// The rigidbody of the swatter.
-	Rigidbody body;
-	// The maximum amount of time the swatter can exist.
-	const int timeLimit = 18;
-	// The time that the swatter has existed.
-	int timer = 0;
-	// The initial local scale of the swatter.
-	Vector3 initScale;
-	// Whether the swatter has hit something.
-	bool hit;
-	// Whether hit will be set to true next frame.
-	bool willHit = false;
-	// Whether the swatter will be destroyed after its animation finishes.
+	/// <summary> The rigidbody of the swatter. </summary>
+	private Rigidbody body;
+	/// <summary> The maximum amount of time the swatter can exist. </summary>
+	private const int TIMELIMIT = 18;
+	/// <summary> The time that the swatter has existed. </summary>
+	private int timer = 0;
+	/// <summary> The initial local scale of the swatter. </summary>
+	private Vector3 initScale;
+	/// <summary> Whether the swatter has hit something. </summary>
+	private bool hit;
+	/// <summary> Whether hit will be set to true next frame. </summary>
+	private bool willHit = false;
+	/// <summary> Whether the swatter will be destroyed after its animation finishes. </summary>
 	[HideInInspector]
 	public bool willDestroy = false;
 
-	// Move the fly swatter to its beginning position.
-	public void Initiate () {
+	/// <summary>
+	/// Moves the fly swatter to its beginning position.
+	/// </summary>
+	public void Initiate() {
 		timer = 0;
 		willHit = false;
 		hit = false;
@@ -29,12 +32,14 @@ public class FlySwatter : MonoBehaviour {
 		transform.localRotation = Quaternion.identity;
 		transform.localScale = Vector3.one;
 		initScale = transform.localScale;
-		transform.parent.GetComponent<Player> ().canMove = false;
-		gameObject.SetActive (true);
+		transform.parent.GetComponent<Player>().canMove = false;
+		gameObject.SetActive(true);
 	}
-	
-	// Update is called once per frame.
-	void Update () {
+
+	/// <summary>
+	/// Moves the fly swatter when it is deployed.
+	/// </summary>
+	private void Update () {
 		if (GameMenuUI.paused) {
 			return;
 		}
@@ -43,29 +48,32 @@ public class FlySwatter : MonoBehaviour {
 		}
 		if (!hit) {
 			float changeAngle = transform.localEulerAngles.x + 10;
-			float angleSin = Mathf.Sin (changeAngle * Mathf.Deg2Rad);
-			transform.localEulerAngles = PathUtil.SetX (transform.localEulerAngles, changeAngle);
-			transform.localScale = PathUtil.SetY (transform.localScale, initScale.y + angleSin / 1);
+			float angleSin = Mathf.Sin(changeAngle * Mathf.Deg2Rad);
+			transform.localEulerAngles = PathUtil.SetX(transform.localEulerAngles, changeAngle);
+			transform.localScale = PathUtil.SetY(transform.localScale, initScale.y + angleSin / 1);
 			if (changeAngle == 100) {
 				willHit = true;
 			}
 		}
-		if (timer++ > timeLimit) {
-			transform.parent.GetComponent<Player> ().canMove = true;
+		if (timer++ > TIMELIMIT) {
+			transform.parent.GetComponent<Player>().canMove = true;
 			if (willDestroy) {
-				Destroy (gameObject);
+				Destroy(gameObject);
 			} else {
 				gameObject.SetActive (false);
 			}
 		}
 	}
 
-	// Triggers events when colliding with certain objects.
-	void OnTriggerEnter (Collider collider) {
+	/// <summary>
+	/// Triggers events when colliding with certain objects.
+	/// </summary>
+	/// <param name="collider">The collider that the fly swatter hit.</param>
+	private void OnTriggerEnter(Collider collider) {
 		if (!collider.isTrigger && !hit) {
-			Enemy enemy = collider.GetComponent<Enemy> ();
+			Enemy enemy = collider.GetComponent<Enemy>();
 			if (enemy != null) {
-				enemy.KillEntity ();
+				enemy.KillEntity();
 			}
 			hit = true;
 		}

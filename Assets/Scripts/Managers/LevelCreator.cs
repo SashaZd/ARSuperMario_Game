@@ -1,152 +1,188 @@
 using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 using System.Net;
 
-// Creates a ribbon path from input.
+/// <summary>
+/// Creates a ribbon path from input.
+/// </summary>
 public class LevelCreator : MonoBehaviour {
 
-	// Path resource to be instantiated from.
-	public PathComponent pathPrefab;
-	// Goal resource to be instantiated from.
-	public GameObject goalPrefab;
-	// Texture for virtual platforms.
-	public Material virtualPlatformMaterial;
-	// Block resources to be instantiated from.
-	public Block[] blockPrefabs;
+	/// <summary> Path resource to be instantiated from. </summary>
+	[SerializeField]
+	[Tooltip("Path resource to be instantiated from.")]
+	private PathComponent pathPrefab;
+	/// <summary> Goal resource to be instantiated from. </summary>
+	[SerializeField]
+	[Tooltip("Goal resource to be instantiated from.")]
+	private GameObject goalPrefab;
+	/// <summary> Texture for virtual platforms. </summary>
+	[SerializeField]
+	[Tooltip("Texture for virtual platforms.")]
+	private Material virtualPlatformMaterial;
+	/// <summary> Block resources to be instantiated from. </summary>
+	[SerializeField]
+	[Tooltip("Block resources to be instantiated from.")]
+	private Block[] blockPrefabs;
 
-	// Item resources to be instantiated from.
-	public Item[] itemPrefabs;
+	/// <summary> Item resources to be instantiated from. </summary>
+	[SerializeField]
+	[Tooltip("Item resources to be instantiated from.")]
+	private Item[] itemPrefabs;
 
-	// The player.
-	public Player playerPrefab;
-	// Enemy resources to be instantiated from.
-	public Enemy[] enemyPrefabs;
+	/// <summary> The player. </summary>
+	[SerializeField]
+	[Tooltip("The player.")]
+	private Player playerPrefab;
+	/// <summary> Enemy resources to be instantiated from. </summary>
+	[SerializeField]
+	[Tooltip("Enemy resources to be instantiated from.")]
+	private Enemy[] enemyPrefabs;
 	
-	// The material to draw path lines with.
-	public Material lineMaterial;
+	/// <summary> The material to draw path lines with. </summary>
+	[SerializeField]
+	[Tooltip("The material to draw path lines with.")]
+	private Material lineMaterial;
 
-	// JSON file to load the level from.
-	public TextAsset json;
-	// File to load surface data from.
-	public TextAsset surfaceFile;
+	/// <summary> JSON file to load the level from. </summary>
+	[SerializeField]
+	[Tooltip("JSON file to load the level from.")]
+	private TextAsset json;
+	/// <summary> File to load surface data from. </summary>
+	[SerializeField]
+	[Tooltip("File to load surface data from.")]
+	private TextAsset surfaceFile;
 
-	// Whether to generate colliders directly from path points.
-	public bool generatePathColliders = false;
+	/// <summary> Whether to generate colliders directly from path points. </summary>
+	[SerializeField]
+	[Tooltip("Whether to generate colliders directly from path points.")]
+	private bool generatePathColliders = false;
 
-	// The height of virtual platforms.
-	const float PLATFORMHEIGHT = 0.05f;
+	/// <summary> The height of virtual platforms. </summary>
+	private const float PLATFORMHEIGHT = 0.05f;
 
-	// Use this for initialization.
-	void Start () {
+	/// <summary>
+	/// Creates the level from either the level AI server or a local JSON.
+	/// </summary>
+	private void Start() {
 		if (json == null) {
 			// Connect to the server to get JSON file.
-			NetworkingManager.instance.ProcessStringFromURL ((jsonText) =>
+			NetworkingManager.instance.ProcessStringFromURL((jsonText) =>
 				{
 					CreateLevel(jsonText);
 				});
 		} else {
 			// Hard-coded JSON resource for testing.
-			CreateLevel (json.text);
+			CreateLevel(json.text);
 		}
 	}
 
-	void CreateLevel (string jsonText) {
-		JSONObject input = new JSONObject (jsonText);
-		Tracker.GetInstance ().logJSON (jsonText);
+	/// <summary>
+	/// Creates the level.
+	/// </summary>
+	/// <param name="jsonText">The JSON text to create the level with.</param>
+	private void CreateLevel(string jsonText) {
+		JSONObject input = new JSONObject(jsonText);
+		Tracker.Instance.logJSON (jsonText);
 
 		// Parse the path from JSON.
-		JSONObject pathJSON = input.GetField ("route");
+		JSONObject pathJSON = input.GetField("route");
 		if (pathJSON == null) {
-			print ("Failed to load JSON file.");
+			print("Failed to load JSON file.");
 			return;
 		}
-		List<PathInput> pathInput = new List<PathInput> (pathJSON.list.Count);
+		List<PathInput> pathInput = new List<PathInput>(pathJSON.list.Count);
 		foreach (JSONObject pathComponent in pathJSON.list) {
-			pathInput.Add (new PathInput (pathComponent));
+			pathInput.Add(new PathInput(pathComponent));
 		}
 
 		// Parse platforms from JSON.
-		JSONObject platformJSON = input.GetField ("virtual_platform");
+		JSONObject platformJSON = input.GetField("virtual_platform");
 		List<PlatformInput> platformInput;
 		if (platformJSON == null) {
-			platformInput = new List<PlatformInput> (0);
+			platformInput = new List<PlatformInput>(0);
 		} else {
-			platformInput = new List<PlatformInput> (platformJSON.list.Count);
+			platformInput = new List<PlatformInput>(platformJSON.list.Count);
 			foreach (JSONObject platform in platformJSON.list) {
-				platformInput.Add (new PlatformInput (platform));
+				platformInput.Add(new PlatformInput(platform));
 			}
 		}
 		// Hard-coded surfaces for testing.
 		if (surfaceFile != null) {
-			JSONObject surfaceJSON = new JSONObject (surfaceFile.text);
-			if (surfaceJSON.HasField ("surfaces")) {
-				foreach (JSONObject surface in surfaceJSON.GetField ("surfaces").list) {
-					platformInput.Add (new PlatformInput (surface));
+			JSONObject surfaceJSON = new JSONObject(surfaceFile.text);
+			if (surfaceJSON.HasField("surfaces")) {
+				foreach (JSONObject surface in surfaceJSON.GetField("surfaces").list) {
+					platformInput.Add(new PlatformInput(surface));
 				}
 			} else {
 				foreach (JSONObject surface in surfaceJSON.list) {
 					foreach (JSONObject triangle in surface.list) {
-						platformInput.Add (new PlatformInput (triangle));
+						platformInput.Add(new PlatformInput (triangle));
 					}
 				}
 			}
 		}
 
 		// Parse enemies from JSON.
-		JSONObject enemyJSON = input.GetField ("enemies");
+		JSONObject enemyJSON = input.GetField("enemies");
 		List<EnemyInput> enemyInput;
 		if (enemyJSON == null) {
-			enemyInput = new List<EnemyInput> (0);
+			enemyInput = new List<EnemyInput>(0);
 		} else {
-			enemyInput = new List<EnemyInput> (enemyJSON.list.Count);
+			enemyInput = new List<EnemyInput>(enemyJSON.list.Count);
 			foreach (JSONObject enemy in enemyJSON.list) {
-				enemyInput.Add (new EnemyInput (enemy));
+				enemyInput.Add(new EnemyInput(enemy));
 			}
 		}
 
 		// Parse collectibles from JSON.
-		JSONObject collectibleJSON = input.GetField ("collectibles");
+		JSONObject collectibleJSON = input.GetField("collectibles");
 		List<CollectibleInput> collectibleInput;
 		if (collectibleJSON == null) {
-			collectibleInput = new List<CollectibleInput> (0);
+			collectibleInput = new List<CollectibleInput>(0);
 		} else {
-			collectibleInput = new List<CollectibleInput> (collectibleJSON.list.Count);
+			collectibleInput = new List<CollectibleInput>(collectibleJSON.list.Count);
 			foreach (JSONObject collectible in collectibleJSON.list) {
-				collectibleInput.Add (new CollectibleInput (collectible));
+				collectibleInput.Add(new CollectibleInput (collectible));
 			}
 		}
 
 		// Parse blocks from JSON.
-		JSONObject blockJSON = input.GetField ("blocks");
+		JSONObject blockJSON = input.GetField("blocks");
 		List<BlockInput> blockInput;
 		if (blockJSON == null) {
-			blockInput = new List<BlockInput> (0);
+			blockInput = new List<BlockInput>(0);
 		} else {
-			blockInput = new List<BlockInput> (blockJSON.list.Count);
+			blockInput = new List<BlockInput>(blockJSON.list.Count);
 			foreach (JSONObject block in blockJSON.list) {
-				blockInput.Add (new BlockInput (block));
+				blockInput.Add(new BlockInput (block));
 			}
 		}
 
-		CreateLevel (pathInput, platformInput, enemyInput, collectibleInput, blockInput);
+		CreateLevel(pathInput, platformInput, enemyInput, collectibleInput, blockInput);
 	}
 
-	// Creates a level from the given input.
-	public void CreateLevel (List<PathInput> pathInput, List<PlatformInput> platformInput, List<EnemyInput> enemyInput, List<CollectibleInput> collectibleInput, List<BlockInput> blockInput) {
-		LevelManager levelManager = LevelManager.GetInstance ();
+	/// <summary>
+	/// Creates a level from the given input.
+	/// </summary>
+	/// <param name="pathInput">The path for the level.</param>
+	/// <param name="platformInput">Virtual platforms in the level.</param></param>
+	/// <param name="enemyInput">Enemies in the level.</param>
+	/// <param name="collectibleInput">Collectibles in the level.</param>
+	/// <param name="blockInput">Blocks in the level.</param>
+	public void CreateLevel(List<PathInput> pathInput, List<PlatformInput> platformInput, List<EnemyInput> enemyInput, List<CollectibleInput> collectibleInput, List<BlockInput> blockInput) {
+		LevelManager levelManager = LevelManager.Instance;
 
 		// Create virtual platforms from the input.
 		foreach (PlatformInput input in platformInput) {
-			CreatePlatform (input);
+			CreatePlatform(input);
 		}
 		
 		// Construct the path from the input points.
 		List<PathComponent> fullPath = new List<PathComponent>(pathInput.Count - 1);
 		for (int i = 0; i < fullPath.Capacity; i++) {
 			// Make and position the path component.
-			PathComponent pathComponent = CreatePath (pathInput[i], pathInput[i + 1]);
-			fullPath.Add (pathComponent);
+			PathComponent pathComponent = CreatePath(pathInput[i], pathInput[i + 1]);
+			fullPath.Add(pathComponent);
 			pathComponent.lineMaterial = lineMaterial;
 
 			// Link paths together.
@@ -155,54 +191,54 @@ public class LevelCreator : MonoBehaviour {
 				fullPath[i - 1].nextPath = pathComponent;
 			}
 
-			pathComponent.Init ();
+			pathComponent.Init();
 		}
 
 		// Construct virtual platforms to represent the colliders.
 		if (generatePathColliders) {
 			for (int i = 0; i < fullPath.Capacity; i++) {
-				List<Vector3> platform = new List<Vector3> ();
-				Vector3 direction = pathInput [i + 1].position - pathInput [i].position;
-				Vector3 flatDirection = PathUtil.RemoveY (direction);
+				List<Vector3> platform = new List<Vector3>();
+				Vector3 direction = pathInput[i + 1].position - pathInput[i].position;
+				Vector3 flatDirection = PathUtil.RemoveY(direction);
 				float thickness = 0.025f;
 				if (flatDirection == Vector3.zero) {
 					// Wall
 					if (i > 0) {
-						flatDirection = Vector3.Normalize (PathUtil.RemoveY (pathInput [i].position - pathInput [i - 1].position)) * thickness;
+						flatDirection = Vector3.Normalize(PathUtil.RemoveY(pathInput[i].position - pathInput[i - 1].position)) * thickness;
 						Vector3 directionRotate = new Vector3 (flatDirection.z, 0, -flatDirection.x);
-						Vector3 top = pathInput [i + 1].position.y > pathInput [i].position.y ? pathInput [i + 1].position : pathInput [i].position;
-						platform.Add (top + directionRotate);
-						platform.Add (top + directionRotate + flatDirection);
-						platform.Add (top - directionRotate + flatDirection);
-						platform.Add (top - directionRotate);
-						CreatePlatform (new PlatformInput (platform), Mathf.Abs (pathInput [i + 1].position.y - pathInput [i].position.y), true);
+						Vector3 top = pathInput[i + 1].position.y > pathInput[i].position.y ? pathInput[i + 1].position : pathInput[i].position;
+						platform.Add(top + directionRotate);
+						platform.Add(top + directionRotate + flatDirection);
+						platform.Add(top - directionRotate + flatDirection);
+						platform.Add(top - directionRotate);
+						CreatePlatform (new PlatformInput(platform), Mathf.Abs(pathInput[i + 1].position.y - pathInput[i].position.y), true);
 					}
 				} else {
-					Vector3 flatDirectionNorm = Vector3.Normalize (flatDirection);
-					Vector3 directionRotate = new Vector3 (flatDirectionNorm.z, 0, -flatDirectionNorm.x) * thickness;
+					Vector3 flatDirectionNorm = Vector3.Normalize(flatDirection);
+					Vector3 directionRotate = new Vector3(flatDirectionNorm.z, 0, -flatDirectionNorm.x) * thickness;
 					if (flatDirection != direction) {
 						// Slope
-						platform.Add (pathInput [i + 1].position + directionRotate + flatDirectionNorm * thickness * 2);
-						platform.Add (pathInput [i + 1].position - directionRotate + flatDirectionNorm * thickness * 2);
-						platform.Add (pathInput [i + 1].position - directionRotate);
-						platform.Add (pathInput [i + 1].position + directionRotate);
-						List<Vector3> bottom = new List<Vector3> ();
-						bottom.Add (pathInput [i].position + directionRotate + flatDirectionNorm * thickness * 2);
-						bottom.Add (pathInput [i].position - directionRotate + flatDirectionNorm * thickness * 2);
-						bottom.Add (pathInput [i].position - directionRotate);
-						bottom.Add (pathInput [i].position + directionRotate);
-						if (platform [0].y > bottom [0].y) {
-							CreatePlatform (new PlatformInput (platform), new PlatformInput (bottom), true);
+						platform.Add(pathInput[i + 1].position + directionRotate + flatDirectionNorm * thickness * 2);
+						platform.Add(pathInput[i + 1].position - directionRotate + flatDirectionNorm * thickness * 2);
+						platform.Add(pathInput[i + 1].position - directionRotate);
+						platform.Add(pathInput[i + 1].position + directionRotate);
+						List<Vector3> bottom = new List<Vector3>();
+						bottom.Add(pathInput[i].position + directionRotate + flatDirectionNorm * thickness * 2);
+						bottom.Add(pathInput[i].position - directionRotate + flatDirectionNorm * thickness * 2);
+						bottom.Add(pathInput[i].position - directionRotate);
+						bottom.Add(pathInput[i].position + directionRotate);
+						if (platform[0].y > bottom[0].y) {
+							CreatePlatform(new PlatformInput(platform), new PlatformInput(bottom), true);
 						} else {
-							CreatePlatform (new PlatformInput (bottom), new PlatformInput (platform), true);
+							CreatePlatform(new PlatformInput(bottom), new PlatformInput(platform), true);
 						}
 					} else {
 						// Floor
-						platform.Add (pathInput [i + 1].position + directionRotate);
-						platform.Add (pathInput [i + 1].position - directionRotate);
-						platform.Add (pathInput [i].position - directionRotate);
-						platform.Add (pathInput [i].position + directionRotate);
-						CreatePlatform (new PlatformInput (platform), PLATFORMHEIGHT, true);
+						platform.Add(pathInput[i + 1].position + directionRotate);
+						platform.Add(pathInput[i + 1].position - directionRotate);
+						platform.Add(pathInput[i].position - directionRotate);
+						platform.Add(pathInput[i].position + directionRotate);
+						CreatePlatform(new PlatformInput(platform), PLATFORMHEIGHT, true);
 					}
 				}
 			}
@@ -214,39 +250,39 @@ public class LevelCreator : MonoBehaviour {
 		}
 
 		// Set the player on a path.
-		Player player = Instantiate (playerPrefab) as Player;
-		player.GetComponent<PathMovement> ().currentPath = fullPath[0];
-		player.GetComponent<PathMovement> ().startPath = fullPath[0];
+		Player player = Instantiate(playerPrefab) as Player;
+		player.GetComponent<PathMovement>().currentPath = fullPath[0];
+		player.GetComponent<PathMovement>().startPath = fullPath[0];
 		foreach (PathComponent pathComponent in fullPath) {
 			pathComponent.transform.parent = player.transform;
 		}
 		levelManager.player = player;
 		
 		// Create the goal at the end of the path.
-		GameObject goal = Instantiate (goalPrefab);
-		goal.transform.parent = levelManager.transform.FindChild ("Platforms").transform;
-		Vector3 pathEnd = PathUtil.SetY (fullPath[fullPath.Count - 1].GetEnd (), PathUtil.ceilingHeight);
+		GameObject goal = Instantiate(goalPrefab);
+		goal.transform.parent = levelManager.transform.FindChild("Platforms").transform;
+		Vector3 pathEnd = PathUtil.SetY(fullPath[fullPath.Count - 1].End, PathUtil.ceilingHeight);
 		RaycastHit hit;
-		if (Physics.Raycast (pathEnd, Vector3.down, out hit, PathUtil.ceilingHeight * 1.1f)) {
+		if (Physics.Raycast(pathEnd, Vector3.down, out hit, PathUtil.ceilingHeight * 1.1f)) {
 			goal.transform.position = hit.point + Vector3.up * 0.025f;
 		} else {
-			goal.transform.position = fullPath[fullPath.Count - 1].GetEnd ();
+			goal.transform.position = fullPath[fullPath.Count - 1].End;
 		}
 
 		// Create enemies from the input.
-		List<Enemy> enemies = new List<Enemy> (enemyInput.Count);
+		List<Enemy> enemies = new List<Enemy>(enemyInput.Count);
 		foreach (EnemyInput input in enemyInput) {
 			if (input.enemyIndex < enemyPrefabs.Length) {
-				Enemy enemy = Instantiate (enemyPrefabs[input.enemyIndex]) as Enemy;
-				enemies.Add (enemy);
-				enemy.transform.parent = levelManager.transform.FindChild ("Enemies").transform;
-				if (enemy.GetComponent<PathMovement> ()) {
+				Enemy enemy = Instantiate(enemyPrefabs[input.enemyIndex]) as Enemy;
+				enemies.Add(enemy);
+				enemy.transform.parent = levelManager.transform.FindChild("Enemies").transform;
+				if (enemy.GetComponent<PathMovement>()) {
 					// Create the enemy path.
 					int pathLength = input.path.Count - 1;
-					List<PathComponent> enemyPath = new List<PathComponent> (pathLength);
+					List<PathComponent> enemyPath = new List<PathComponent>(pathLength);
 					for (int i = 0; i < pathLength; i++) {
-						PathComponent pathComponent = CreatePath (input.path[i], input.path[i + 1]);
-						enemyPath.Add (pathComponent);
+						PathComponent pathComponent = CreatePath(input.path[i], input.path[i + 1]);
+						enemyPath.Add(pathComponent);
 						if (i > 0) {
 							pathComponent.previousPath = enemyPath[i - 1];
 							enemyPath[i - 1].nextPath = pathComponent;
@@ -254,12 +290,12 @@ public class LevelCreator : MonoBehaviour {
 						pathComponent.transform.parent = enemy.transform;
 					}
 					// Allow enemy paths to be circular.
-					if (input.path[0].Equals (input.path[input.path.Count - 1])) {
+					if (input.path[0].Equals(input.path[input.path.Count - 1])) {
 						enemyPath[0].previousPath = enemyPath[pathLength - 1];
 						enemyPath[pathLength - 1].nextPath = enemyPath[0];
 					}
-					enemy.GetComponent<PathMovement> ().currentPath = enemyPath[0];
-					enemy.GetComponent<PathMovement> ().startPath = enemyPath[0];
+					enemy.GetComponent<PathMovement>().currentPath = enemyPath[0];
+					enemy.GetComponent<PathMovement>().startPath = enemyPath[0];
 				} else {
 					enemy.transform.position = input.path[0].position;
 				}
@@ -272,7 +308,7 @@ public class LevelCreator : MonoBehaviour {
 					}
 				}
 				float offset = enemyCollider.bounds.extents.y;
-				Physics.Raycast (enemy.transform.position + Vector3.up * offset, Vector3.down, out hit, offset);
+				Physics.Raycast(enemy.transform.position + Vector3.up * offset, Vector3.down, out hit, offset);
 				enemy.transform.position = hit.point + Vector3.up * offset / 2;
 			}
 		}
@@ -282,74 +318,91 @@ public class LevelCreator : MonoBehaviour {
 		foreach (CollectibleInput input in collectibleInput) {
 			Item item = null;
 			if (input.type == "coin") {
-				item = Instantiate (itemPrefabs[(int) Items.Coin]) as Item;
+				item = Instantiate(itemPrefabs[(int)Items.Coin]) as Item;
 			} else if (input.type == "power_up_size") {
-				item = Instantiate (itemPrefabs[(int) Items.Mushroom]) as Item;
+				item = Instantiate(itemPrefabs[(int)Items.Mushroom]) as Item;
 			} else if (input.type == "power_up_speed") {
-				item = Instantiate (itemPrefabs[(int) Items.Coffee]) as Item;
+				item = Instantiate(itemPrefabs[(int)Items.Coffee]) as Item;
 			} else if (input.type == "power_up_range") {
-				item = Instantiate (itemPrefabs[(int) Items.Toothpick]) as Item;
+				item = Instantiate(itemPrefabs[(int)Items.Toothpick]) as Item;
 			} else if (input.type == "power_up_melee") {
-				item = Instantiate (itemPrefabs[(int) Items.FlySwatter]) as Item;
+				item = Instantiate(itemPrefabs[(int)Items.FlySwatter]) as Item;
 			}
 
 			if (item != null) {
-				item.transform.parent = levelManager.transform.FindChild ("Items").transform;
+				item.transform.parent = levelManager.transform.FindChild("Items").transform;
 				item.transform.position = input.position;
-				item.SetInitPosition (input.position);
+				item.SetInitPosition(input.position);
 			}
 		}
 
 		// Create blocks from the input.
-		List<Block> blocks = new List<Block> (blockInput.Count);
+		List<Block> blocks = new List<Block>(blockInput.Count);
 		foreach (BlockInput input in blockInput) {
-			Block block = Instantiate (blockPrefabs[input.blockIndex]) as Block;
+			Block block = Instantiate(blockPrefabs[input.blockIndex]) as Block;
 			if (input.contentIndex != -1) {
 				block.contents = itemPrefabs[input.contentIndex];
 			}
-			block.transform.parent = levelManager.transform.FindChild ("Blocks").transform;
+			block.transform.parent = levelManager.transform.FindChild("Blocks").transform;
 			block.transform.position = input.position;
 			blocks.Add (block);
 		}
 
 		// Pass the needed data to the level manager to store.
 		levelManager.fullPath = fullPath;
-		levelManager.pathRendererList = new PathRendererList (fullPath [0]);
+		levelManager.pathRendererList = new PathRendererList(fullPath [0]);
 		levelManager.enemies = enemies;
 		levelManager.items = items;
 		levelManager.blocks = blocks;
 	}
 
-	// Creates a path component from a start and end point.
-	PathComponent CreatePath (PathInput startInput, PathInput endInput) {
+	/// <summary>
+	/// Creates a path component from a start point and end point.
+	/// </summary>
+	/// <returns>A new path component from the specified start and end points.</returns>
+	/// <param name="startInput">The start point of the path component.</param>
+	/// <param name="endInput">The end point of the path component.</param>
+	private PathComponent CreatePath (PathInput startInput, PathInput endInput) {
 		Vector3 start = startInput.position;
 		Vector3 end = endInput.position;
 		Vector3 center = (start + end) / 2;
-		PathComponent path = Instantiate (pathPrefab, center, Quaternion.LookRotation (end - start, Vector3.up)) as PathComponent;
-		path.SetPath (start, end);
-		path.transform.Rotate (new Vector3 (0, -90, 0));
+		PathComponent path = Instantiate(pathPrefab, center, Quaternion.LookRotation(end - start, Vector3.up)) as PathComponent;
+		path.SetPath(start, end);
+		path.transform.Rotate(new Vector3 (0, -90, 0));
 		Vector3 tempScale = path.transform.localScale;
-		tempScale.x *= Vector3.Magnitude (end - start);
+		tempScale.x *= Vector3.Magnitude(end - start);
 		path.transform.localScale = tempScale;
 		return path;
 	}
-	
-	// Creates a virtual platform from its top vertices.
-	GameObject CreatePlatform (PlatformInput input, float height = PLATFORMHEIGHT, bool hidden = false) {
-		List<Vector3> bottom = new List<Vector3> (input.vertices.Count);
+
+	/// <summary>
+	/// Creates a virtual platform from its top vertices.
+	/// </summary>
+	/// <returns>A new virtual platform from the specified top vertices.</returns>
+	/// <param name="input">The top vertices of the platform.</param>
+	/// <param name="height">The thickness of the platform.</param>
+	/// <param name="hidden">Whether to render the platform.</param>
+	private GameObject CreatePlatform(PlatformInput input, float height = PLATFORMHEIGHT, bool hidden = false) {
+		List<Vector3> bottom = new List<Vector3>(input.vertices.Count);
 		for (int i = 0; i < input.vertices.Count; i++) {
-			bottom.Add (PathUtil.SetY(input.vertices[i], input.vertices[i].y - height));
+			bottom.Add(PathUtil.SetY(input.vertices[i], input.vertices[i].y - height));
 		}
-		return CreatePlatform (input, new PlatformInput (bottom), hidden);
+		return CreatePlatform(input, new PlatformInput (bottom), hidden);
 	}
 
-	// Creates a virtual platform from both top and bottom vertices.
-	GameObject CreatePlatform (PlatformInput top, PlatformInput bottom, bool hidden = false) {
-		GameObject virtualPlatform = new GameObject ();
+	/// <summary>
+	/// Creates a virtual platform from both top and bottom vertices.
+	/// </summary>
+	/// <returns>A new virtual platform from the specified vertices.</returns>
+	/// <param name="top">The top vertices of the platform.</param>
+	/// <param name="bottom">The bottom vertices of the platform.</param>
+	/// <param name="hidden">Whether to render the platform.</param>
+	private GameObject CreatePlatform(PlatformInput top, PlatformInput bottom, bool hidden = false) {
+		GameObject virtualPlatform = new GameObject();
 		virtualPlatform.name = hidden ? "Collider" : "Virtual Platform";
-		virtualPlatform.AddComponent<MeshFilter> ();
-		virtualPlatform.AddComponent<MeshRenderer> ();
-		virtualPlatform.GetComponent<Renderer> ().material = virtualPlatformMaterial;
+		virtualPlatform.AddComponent<MeshFilter>();
+		virtualPlatform.AddComponent<MeshRenderer>();
+		virtualPlatform.GetComponent<Renderer>().material = virtualPlatformMaterial;
 		Mesh mesh = virtualPlatform.GetComponent<MeshFilter>().mesh;
 
 		// Create the vertices of the platform.
@@ -370,8 +423,8 @@ public class LevelCreator : MonoBehaviour {
 		bool clockwise = edgeSum > 0;
 
 		// Find the triangles that can make up the top and bottom faces of the platform mesh.
-		Triangulator triangulator = new Triangulator (top.vertices.ToArray ());
-		int[] topTriangles = triangulator.Triangulate ();
+		Triangulator triangulator = new Triangulator(top.vertices.ToArray ());
+		int[] topTriangles = triangulator.Triangulate();
 		int[] triangles = new int[topTriangles.Length * 2 + top.vertices.Count * 6];
 		for (int i = 0; i < topTriangles.Length; i += 3) {
 			triangles[i] = topTriangles[i];
@@ -405,20 +458,11 @@ public class LevelCreator : MonoBehaviour {
 
 		mesh.triangles = triangles;
 
-		virtualPlatform.AddComponent<MeshCollider> ();
-		virtualPlatform.GetComponent<MeshCollider> ().sharedMesh = mesh;
+		virtualPlatform.AddComponent<MeshCollider>();
+		virtualPlatform.GetComponent<MeshCollider>().sharedMesh = mesh;
 		
-		virtualPlatform.transform.parent = LevelManager.GetInstance ().transform.FindChild ("Platforms").transform;
+		virtualPlatform.transform.parent = LevelManager.Instance.transform.FindChild("Platforms").transform;
 		
 		return virtualPlatform;
-	}
-
-
-	// Debug method used to print a mesh's triangles.
-	public void PrintMesh (Mesh mesh) {
-		print ("Mesh");
-		for (int i = 0; i < mesh.triangles.Length; i += 3) {
-			print (mesh.vertices[mesh.triangles[i]] + "" + mesh.vertices[mesh.triangles[i + 1]] + "" + mesh.vertices[mesh.triangles[i + 2]]);
-		}
 	}
 }

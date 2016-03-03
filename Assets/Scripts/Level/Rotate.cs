@@ -1,17 +1,22 @@
 ﻿using UnityEngine;
-using System.Collections;
 
-// Rotates the object every frame.
+/// <summary>
+/// Rotates the object every frame.
+/// </summary>
 public class Rotate : MonoBehaviour {
 
 	// The speed that the object is rotated at.
-	public float rotateSpeed = 1;
+	[SerializeField]
+	[Tooltip("The speed that the object is rotated at.")]
+	private float rotateSpeed = 1;
 
-	// Update is called once per frame.
-	void Update () {
+	/// <summary>
+	/// Rotates the object.
+	/// </summary>
+	private void Update () {
 		if (GameMenuUI.paused) {
 			return;
 		}
-		transform.Rotate (new Vector3 (0f, rotateSpeed, 0f));
+		transform.Rotate(new Vector3(0f, rotateSpeed, 0f));
 	}
 }
