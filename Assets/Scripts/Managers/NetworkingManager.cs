@@ -12,6 +12,9 @@ public class NetworkingManager : MonoBehaviour {
 	[Tooltip("Where to send and receive data from.")]
 	public string url;
 
+	/// <summary> Holds data about the user of the application. </summary>
+	private UserData userData;
+
 	/// <summary> The singleton instance of the networking manager. </summary>
 	public static NetworkingManager instance;
 
@@ -20,6 +23,16 @@ public class NetworkingManager : MonoBehaviour {
 	/// </summary>
 	private void Awake() {
 		instance = this;
+	}
+
+	/// <summary>
+	/// Finds the user data for the user.
+	/// </summary>
+	private void Start() {
+		userData = FindObjectOfType<UserData>();
+		if (userData == null) {
+			userData = gameObject.AddComponent<UserData>();
+		}
 	}
 
 	/// <summary>
@@ -46,6 +59,7 @@ public class NetworkingManager : MonoBehaviour {
 	/// <param name="position">The position to post.</param>
 	public void PostPositionInURL(Vector3 position) {
 		WWWForm form = new WWWForm();
+		form.AddField("username", userData.username);
 		form.AddField("x", position.x.ToString());
 		form.AddField("y", position.y.ToString());
 		form.AddField("z", position.z.ToString());

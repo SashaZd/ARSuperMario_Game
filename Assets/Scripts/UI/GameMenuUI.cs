@@ -30,7 +30,7 @@ public class GameMenuUI : MonoBehaviour {
 		if (pauseTimer > 0) {
 			pauseTimer--;
 		}
-		if (pauseTimer <= 0 && Input.GetKey(KeyCode.Escape)) {
+		if (pauseTimer <= 0 && Input.GetKey(KeyCode.P)) {
 			if (paused) {
 				Unpause();
 			} else {

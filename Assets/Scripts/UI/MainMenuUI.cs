@@ -1,8 +1,9 @@
 ﻿using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 /// <summary>
-/// Button listeners for the main menu.
+/// Event listeners for the main menu.
 /// </summary>
 public class MainMenuUI : MonoBehaviour {
 
@@ -10,11 +11,20 @@ public class MainMenuUI : MonoBehaviour {
 	[Tooltip("The name of the scene that the scanning button will take the user to.")]
 	public string startScene = "";
 
+	/// <summary> The input field for the user's username. </summary>
+	[Tooltip("The input field for the user's username.")]
+	public InputField usernameField;
+	/// <summary> Data about the user of the application. </summary>
+	[Tooltip("Data about the user of the application.")]
+	public UserData userData;
+
 	/// <summary>
-	/// Should normally allow the user to start scanning the environment with the Kinect.
-	/// Currently just takes the user directly to the first screen.
+	/// Takes the user to the level.
 	/// </summary>
 	public void StartScan() {
-		SceneManager.LoadScene(startScene);
+		userData.username = usernameField.text;
+		if (userData.username != "") {
+			SceneManager.LoadScene(startScene);
+		}
 	}
 }

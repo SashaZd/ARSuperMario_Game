@@ -76,6 +76,19 @@ public class Player : MonoBehaviour {
 	/// <summary> The animator controlling the player model's animations. </summary>
 	private Animator animator;
 
+	/// <summary> Whether the player is pressing the forward key. </summary>
+	private bool forward;
+	/// <summary> Whether the player is pressing the backwards key. </summary>
+	private bool backward;
+	/// <summary> Whether the player is pressing the jump key. </summary>
+	private bool jump;
+	/// <summary> Whether the player is pressing the reset key. </summary>
+	private bool reset;
+	/// <summary> Whether the player is pressing the run key. </summary>
+	private bool run;
+	/// <summary> Whether the player is pressing the power-up key. </summary>
+	private bool powerKey;
+
 	/// <summary>
 	/// Initializes the player.
 	/// </summary>
@@ -108,9 +121,29 @@ public class Player : MonoBehaviour {
 	}
 
 	/// <summary>
+	/// Gets player input.
+	/// </summary>
+	private void Update() {
+		forward = Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D);
+		backward = Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A);
+		jump = Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W);
+		reset = Input.GetKey(KeyCode.R);
+		run = Input.GetKey(KeyCode.H);
+		powerKey = Input.GetKey(KeyCode.Return);
+
+		if (reset) {
+			if (Input.GetKey(KeyCode.LeftShift)) {
+				SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+			} else {
+				LevelManager.Instance.ResetLevel();
+			}
+		}
+	}
+
+	/// <summary>
 	/// Moves the player according to input.
 	/// </summary>
-	private void FixedUpdate () {
+	private void FixedUpdate() {
 		if (GameMenuUI.paused) {
 			return;
 		}
@@ -138,14 +171,6 @@ public class Player : MonoBehaviour {
 				LevelManager.Instance.ResetLevel();
 			}
 		} else {
-			// Get player input.
-			bool forward = Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D);
-			bool backward = Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A);
-			bool jump = Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W);
-			bool reset = Input.GetKey(KeyCode.R);
-			bool run = Input.GetKey(KeyCode.H);
-			bool powerKey = Input.GetKey(KeyCode.Return);
-
 			bool moving = false;
 			if (canMove) {
 				if (forward ^ backward) {
@@ -171,19 +196,11 @@ public class Player : MonoBehaviour {
 			if (powerKey) {
 				for (int i = 0; i < powers.Count; i++) {
 					Power power = powers[i];
-					power.PowerKey ();
+					power.PowerKey();
 					if (lostPowers > 0) {
 						i -= lostPowers;
 						lostPowers = 0;
 					}
-				}
-			}
-
-			if (reset) {
-				if (Input.GetKey(KeyCode.LeftShift)) {
-					SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-				} else {
-					LevelManager.Instance.ResetLevel();
 				}
 			}
 
