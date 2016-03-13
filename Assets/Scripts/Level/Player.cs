@@ -259,7 +259,7 @@ public class Player : MonoBehaviour {
 	/// <param name="isJumping">Whether the jump key is pressed.</param>
 	private void Jump(bool isJumping) {
 		// Varies the player's jump height based on movement speed and held jump button.
-		if (isJumping && jumpHeightTimer < baseMaxJumpTimer * Mathf.Min (1.5f, baseMoveSpeed / pathMovement.moveSpeed)) {
+		if (isJumping && jumpHeightTimer < baseMaxJumpTimer * Mathf.Min (1.5f, pathMovement.moveSpeed / baseMoveSpeed)) {
 			bool incremented = false;
 			if (groundCounter > 0) {
 				jumpHeightTimer++;

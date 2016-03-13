@@ -48,9 +48,16 @@ public class NetworkingManager : MonoBehaviour {
 	/// </summary>
 	/// <param name="OnGet">The process to run on the string obtained from the specified URL.</param>
 	private IEnumerator GetURL(Action<string> OnGet) {
-		WWW www = new WWW(url);
+		WWWForm form = new WWWForm();
+		form.AddField("username", GetUsername());
+		WWW www = new WWW(url, form);
 		yield return www;
-		OnGet(www.text);
+
+		if (www.error == null) {
+			OnGet(www.text);
+		} else {
+			Debug.Log(www.error);
+		} 
 	}
 
 	/// <summary>
@@ -59,7 +66,7 @@ public class NetworkingManager : MonoBehaviour {
 	/// <param name="position">The position to post.</param>
 	public void PostPositionInURL(Vector3 position) {
 		WWWForm form = new WWWForm();
-		form.AddField("username", userData.username);
+		form.AddField("username", GetUsername());
 		form.AddField("x", position.x.ToString());
 		form.AddField("y", position.y.ToString());
 		form.AddField("z", position.z.ToString());
@@ -73,5 +80,17 @@ public class NetworkingManager : MonoBehaviour {
 	private IEnumerator PostURL(WWWForm form) {
 		WWW www = new WWW(url, form);
 		yield return www;
+
+		if (www.error != null) {
+			Debug.Log(www.error);
+		}
+	}
+
+	/// <summary>
+	/// Gets the name of the player.
+	/// </summary>
+	/// <returns>The name of the player.</returns>
+	private string GetUsername() {
+		return userData == null ? "Someone" : userData.username;
 	}
 }
