@@ -58,7 +58,7 @@ public class LevelCreator : MonoBehaviour {
 	private bool generatePathColliders = false;
 
 	/// <summary> The height of virtual platforms. </summary>
-	private const float PLATFORMHEIGHT = 0.05f;
+	private const float PLATFORMHEIGHT = 0.001f;
 
 	/// <summary>
 	/// Creates the level from either the level AI server or a local JSON.
@@ -218,13 +218,13 @@ public class LevelCreator : MonoBehaviour {
 					Vector3 directionRotate = new Vector3(flatDirectionNorm.z, 0, -flatDirectionNorm.x) * thickness;
 					if (flatDirection != direction) {
 						// Slope
-						platform.Add(pathInput[i + 1].position + directionRotate + flatDirectionNorm * thickness * 2);
-						platform.Add(pathInput[i + 1].position - directionRotate + flatDirectionNorm * thickness * 2);
+						platform.Add(pathInput[i + 1].position + directionRotate + flatDirectionNorm * PLATFORMHEIGHT * 2);
+						platform.Add(pathInput[i + 1].position - directionRotate + flatDirectionNorm * PLATFORMHEIGHT * 2);
 						platform.Add(pathInput[i + 1].position - directionRotate);
 						platform.Add(pathInput[i + 1].position + directionRotate);
 						List<Vector3> bottom = new List<Vector3>();
-						bottom.Add(pathInput[i].position + directionRotate + flatDirectionNorm * thickness * 2);
-						bottom.Add(pathInput[i].position - directionRotate + flatDirectionNorm * thickness * 2);
+						bottom.Add(pathInput[i].position + directionRotate + flatDirectionNorm * PLATFORMHEIGHT * 2);
+						bottom.Add(pathInput[i].position - directionRotate + flatDirectionNorm * PLATFORMHEIGHT * 2);
 						bottom.Add(pathInput[i].position - directionRotate);
 						bottom.Add(pathInput[i].position + directionRotate);
 						if (platform[0].y > bottom[0].y) {

@@ -7,6 +7,8 @@ using System.Collections.Generic;
 public struct PathInput {
 	/// <summary> The position of a path vertex. </summary>
 	public Vector3 position;
+	/// <summary> Y offset to raise points by. </summary>
+	private static float YOFFSET = 0.04f;
 
 	/// <summary>
 	/// Creates a path input.
@@ -15,7 +17,7 @@ public struct PathInput {
 	/// <param name="y">The y coordinate of the path vertex.</param>
 	/// <param name="z">The z coordinate of the path vertex.</param>
 	public PathInput(float x, float y, float z) {
-		position = new Vector3(x, y, z);
+		position = new Vector3(-x, y + YOFFSET, z);
 	}
 
 	/// <summary>
@@ -24,6 +26,8 @@ public struct PathInput {
 	/// <param name="json">JSON data for the path vertex.</param>
 	public PathInput(JSONObject json) {
 		position = PathUtil.MakeVectorFromJSON(json);
+		position.x = -position.x;
+		position.y += YOFFSET;
 	}
 }
 
@@ -45,12 +49,12 @@ public struct PlatformInput {
 		if (json.HasField("platform_type")) {
 			type = (int)json.GetField("platform_type").n;
 			foreach (JSONObject vertex in json.GetField("platform_points").list) {
-				vertices.Add(PathUtil.MakeVectorFromJSON (vertex));
+				vertices.Add(PathUtil.MakeVectorFromJSON(vertex));
 			}
 		} else {
 			type = 1;
 			foreach (JSONObject vertex in json.list) {
-				vertices.Add(PathUtil.MakeVectorFromJSON (vertex));
+				vertices.Add(PathUtil.MakeVectorFromJSON(vertex));
 			}
 		}
 	}
