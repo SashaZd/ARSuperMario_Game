@@ -37,6 +37,8 @@ public class Player : MonoBehaviour {
 	private int jumpHeightTimer = 0;
 	/// <summary> Whether the player is on the ground and can jump. </summary>
 	private int groundCounter = 0;
+	/// <summary> Used to stop the jump animation if the player's y velocity stays at 0. </summary>
+	private bool jumpAnimationCutoff;
 
 	/// <summary> The amount of frames that the player will be invincible after being hit. </summary>
 	private const int INVINCIBLEDELAY = 120;
@@ -259,14 +261,15 @@ public class Player : MonoBehaviour {
 	/// <param name="isJumping">Whether the jump key is pressed.</param>
 	private void Jump(bool isJumping) {
 		// Varies the player's jump height based on movement speed and held jump button.
-		if (isJumping && jumpHeightTimer < baseMaxJumpTimer * Mathf.Min (1.5f, pathMovement.moveSpeed / baseMoveSpeed)) {
+		if (isJumping && jumpHeightTimer < baseMaxJumpTimer * Mathf.Min(1.5f, pathMovement.moveSpeed / baseMoveSpeed)) {
 			bool incremented = false;
 			if (groundCounter > 0) {
 				jumpHeightTimer++;
+				incremented = true;
 				tracker.logAction("Jumped.");
 				animator.SetBool("jumping", true);
 			}
-			if (jumpHeightTimer > 0 && body.velocity.y > -0.01f) {
+			if (jumpHeightTimer > 0) {
 				body.velocity = PathUtil.SetY(body.velocity, jumpSpeed);
 				groundCounter = 0;
 				if (!incremented) {
@@ -277,6 +280,13 @@ public class Player : MonoBehaviour {
 			}
 		} else {
 			jumpHeightTimer = 0;
+		}
+		if (Mathf.Abs(body.velocity.y) < Mathf.Epsilon) {
+			if (jumpAnimationCutoff) {
+				animator.SetBool("jumping", false);
+			} else {
+				jumpAnimationCutoff = true;
+			}
 		}
 	}
 
