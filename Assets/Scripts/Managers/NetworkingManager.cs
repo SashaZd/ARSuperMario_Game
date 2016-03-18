@@ -32,6 +32,9 @@ public class NetworkingManager : MonoBehaviour {
 		userData = FindObjectOfType<UserData>();
 		if (userData == null) {
 			userData = gameObject.AddComponent<UserData>();
+		} else if (userData.gameObject != gameObject) {
+			instance = userData.GetComponent<NetworkingManager>();
+			Destroy(gameObject);
 		}
 	}
 

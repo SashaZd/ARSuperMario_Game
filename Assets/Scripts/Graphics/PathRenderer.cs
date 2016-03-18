@@ -71,7 +71,9 @@ public class PathRenderer {
 				currentDistance += currentPath.Magnitude;
 				currentPath = currentPath.nextPath;
 			}
-			currentDistance += PathUtil.DistanceXZ(currentPath.Start, player.transform.position);
+			if (currentPath != null) {
+				currentDistance += PathUtil.DistanceXZ(currentPath.Start, player.transform.position);
+			}
 		} else {
 			currentDistance = PathUtil.DistanceXZ(lineEnd, player.transform.position);
 		}

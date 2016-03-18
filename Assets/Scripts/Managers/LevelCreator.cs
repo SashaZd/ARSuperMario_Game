@@ -256,6 +256,10 @@ public class LevelCreator : MonoBehaviour {
 		foreach (PathComponent pathComponent in fullPath) {
 			pathComponent.transform.parent = player.transform;
 		}
+		FirstPersonCamera fpCamera = FindObjectOfType<FirstPersonCamera>();
+		if (fpCamera != null) {
+			fpCamera.SetPlayer(player);
+		}
 		levelManager.player = player;
 		
 		// Create the goal at the end of the path.
@@ -350,7 +354,7 @@ public class LevelCreator : MonoBehaviour {
 
 		// Pass the needed data to the level manager to store.
 		levelManager.fullPath = fullPath;
-		levelManager.pathRendererList = new PathRendererList(fullPath [0]);
+		levelManager.InitializePathRenderer();
 		levelManager.enemies = enemies;
 		levelManager.items = items;
 		levelManager.blocks = blocks;

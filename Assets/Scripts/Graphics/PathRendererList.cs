@@ -48,7 +48,7 @@ public class PathRendererList {
 			pathList.PopBack().SetVisible(false);
 		}
 		pathList.PushFront(pathRenderer);
-		//pathRenderer.SetVisible(true);
+		pathRenderer.SetVisible(true);
 	}
 
 	/// <summary>
@@ -60,7 +60,7 @@ public class PathRendererList {
 			pathList.PopFront().SetVisible(false);
 		}
 		pathList.PushBack(pathRenderer);
-		//pathRenderer.SetVisible(true);
+		pathRenderer.SetVisible(true);
 	}
 
 	/// <summary>

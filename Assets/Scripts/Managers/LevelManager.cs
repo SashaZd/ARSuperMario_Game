@@ -43,6 +43,11 @@ public class LevelManager : MonoBehaviour {
 	[HideInInspector]
 	public bool itemIterating = false;
 
+	/// <summary> Whether to show an outline of the ribbon path. </summary>
+	[SerializeField]
+	[Tooltip("Whether to show an outline of the ribbon path.")]
+	private bool outlinePath;
+
 	/// <summary>
 	/// Sets the level manager instance.
 	/// </summary>
@@ -54,13 +59,8 @@ public class LevelManager : MonoBehaviour {
 	/// Resets the positions of all entities in the level.
 	/// </summary>
 	public void ResetLevel() {
-		Tracker.Instance.logAction ("Reset level.");
+		Tracker.Instance.logAction("Reset level.");
 		player.Reset();
-		if (pathRendererList == null) {
-			pathRendererList = new PathRendererList(fullPath[0]);
-		} else {
-			pathRendererList.Init(fullPath[0]);
-		}
 		foreach (Enemy enemy in enemies) {
 			enemy.Reset();
 		}
@@ -77,6 +77,19 @@ public class LevelManager : MonoBehaviour {
 			if (item.willRemove) {
 				items.RemoveAt(i);
 				i--;
+			}
+		}
+	}
+
+	/// <summary>
+	/// Initializes the path renderer list if enabled.
+	/// </summary>
+	public void InitializePathRenderer() {
+		if (outlinePath) {
+			if (pathRendererList == null) {
+				pathRendererList = new PathRendererList(fullPath[0]);
+			} else {
+				pathRendererList.Init(fullPath[0]);
 			}
 		}
 	}

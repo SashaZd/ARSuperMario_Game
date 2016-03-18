@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 /// <summary>
-/// Handles platform visibility settings.
+/// Handles visibility settings.
 /// </summary>
 public class Visibility : MonoBehaviour {
 
@@ -24,7 +24,7 @@ public class Visibility : MonoBehaviour {
 	/// </summary>
 	private void Update() {
 		if (--keyTimer < 0 && Input.GetKey(KeyCode.Tab)) {
-			keyTimer = 3;
+			keyTimer = 8;
 			ChangeSetting();
 			meshVisible = ((int)currentSetting & 1) > 0;
 			Tracker.Instance.logAction("Visibility toggled: " + meshVisible);

@@ -126,15 +126,15 @@ public class Player : MonoBehaviour {
 	/// Gets player input.
 	/// </summary>
 	private void Update() {
-		forward = Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D);
-		backward = Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A);
-		jump = Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W);
-		reset = Input.GetKey(KeyCode.R);
-		run = Input.GetKey(KeyCode.H);
-		powerKey = Input.GetKey(KeyCode.Return);
+		forward = GetKey(KeyCode.RightArrow, KeyCode.D);
+		backward = GetKey(KeyCode.LeftArrow, KeyCode.A);
+		jump = GetKey(KeyCode.Space, KeyCode.UpArrow, KeyCode.W);
+		reset = GetKey(KeyCode.R);
+		run = GetKey(KeyCode.LeftControl, KeyCode.RightControl);
+		powerKey = GetKey(KeyCode.Return);
 
 		if (reset) {
-			if (Input.GetKey(KeyCode.LeftShift)) {
+			if (GetKey(KeyCode.LeftShift)) {
 				SceneManager.LoadScene(SceneManager.GetActiveScene().name);
 			} else {
 				LevelManager.Instance.ResetLevel();
@@ -210,6 +210,20 @@ public class Player : MonoBehaviour {
 				KillPlayer();
 			}
 		}
+	}
+
+	/// <summary>
+	/// Checks if any of the given keys are pressed.
+	/// </summary>
+	/// <returns>Whether any of the given keys are pressed.</returns>
+	/// <param name="keys">The keys to check for being pressed.</param>
+	private bool GetKey(params KeyCode[] keys) {
+		foreach (KeyCode key in keys) {
+			if (Input.GetKey(key)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/// <summary>
