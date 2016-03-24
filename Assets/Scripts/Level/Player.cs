@@ -97,7 +97,7 @@ public class Player : MonoBehaviour {
 	private void Start() {
 		pathMovement = GetComponent<PathMovement>();
 		body = GetComponent<Rigidbody>();
-		playerRenderers = GetComponentsInChildren<SkinnedMeshRenderer>();
+		playerRenderers = transform.FindChild("Model").GetComponentsInChildren<MeshRenderer>();
 
 		canMove = true;
 
@@ -165,6 +165,7 @@ public class Player : MonoBehaviour {
 			Color playerColor = new Color();
 			foreach (Renderer playerRenderer in playerRenderers) {
 				playerColor = playerRenderer.material.color;
+				Debug.Log(playerColor.a);
 				playerColor.a -= 0.05f;
 				playerRenderer.material.color = playerColor;
 			}
