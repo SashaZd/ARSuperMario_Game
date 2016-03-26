@@ -91,6 +91,8 @@ public class LevelManager : MonoBehaviour {
 			} else {
 				pathRendererList.Init(fullPath[0]);
 			}
+		} else if (pathRendererList == null) {
+			pathRendererList = new PathRendererList(null);
 		}
 	}
 }

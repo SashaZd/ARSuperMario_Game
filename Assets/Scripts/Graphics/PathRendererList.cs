@@ -9,14 +9,17 @@ public class PathRendererList {
 	private const int CAPACITY = 10;
 
 	/// <summary> All currently rendered path lines. </summary>
-	private Deque<PathRenderer> pathList = new Deque<PathRenderer>();
+	private Deque<PathRenderer> pathList;
 
 	/// <summary>
 	/// Creates a new path renderer list.
 	/// </summary>
 	/// <param name="startPath">The start of the path being rendered.</param>
 	public PathRendererList(PathComponent startPath) {
-		Init (startPath);
+		if (startPath != null) {
+			pathList = new Deque<PathRenderer>();
+			Init(startPath);
+		}
 	}
 
 	/// <summary>
@@ -69,10 +72,12 @@ public class PathRendererList {
 	/// <param name="player">The moving player.</param>
 	/// <param name="forward">Whether the player is moving forward.</param>
 	public void CheckList(Player player, bool forward) {
-		if (forward) {
-			CheckForward(player);
-		} else {
-			CheckBackward(player);
+		if (pathList != null) {
+			if (forward) {
+				CheckForward(player);
+			} else {
+				CheckBackward(player);
+			}
 		}
 	}
 
@@ -83,7 +88,7 @@ public class PathRendererList {
 	private void CheckForward(Player player) {
 		PathRenderer nextLine = pathList.PeekFront().nextLine;
 		if (nextLine != null && nextLine.GetBackDistance(player) < pathList.PeekBack().GetFrontDistance(player)) {
-			PushFront (nextLine);
+			PushFront(nextLine);
 		}
 	}
 

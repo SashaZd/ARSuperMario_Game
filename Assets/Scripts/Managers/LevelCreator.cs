@@ -58,7 +58,13 @@ public class LevelCreator : MonoBehaviour {
 	private bool generatePathColliders = false;
 
 	/// <summary> The height of virtual platforms. </summary>
-	private const float PLATFORMHEIGHT = 0.001f;
+	[SerializeField]
+	[Tooltip("The height of virtual platforms.")]
+	private float platformHeight;
+	/// <summary> The thickness of virtual platforms. </summary>
+	[SerializeField]
+	[Tooltip("The thickness of virtual platforms.")]
+	private float platformThickness;
 
 	/// <summary>
 	/// Creates the level from either the level AI server or a local JSON.
@@ -200,11 +206,10 @@ public class LevelCreator : MonoBehaviour {
 				List<Vector3> platform = new List<Vector3>();
 				Vector3 direction = pathInput[i + 1].position - pathInput[i].position;
 				Vector3 flatDirection = PathUtil.RemoveY(direction);
-				float thickness = 0.025f;
 				if (flatDirection == Vector3.zero) {
 					// Wall
 					if (i > 0) {
-						flatDirection = Vector3.Normalize(PathUtil.RemoveY(pathInput[i].position - pathInput[i - 1].position)) * thickness;
+						flatDirection = Vector3.Normalize(PathUtil.RemoveY(pathInput[i].position - pathInput[i - 1].position)) * platformThickness;
 						Vector3 directionRotate = new Vector3 (flatDirection.z, 0, -flatDirection.x);
 						Vector3 top = pathInput[i + 1].position.y > pathInput[i].position.y ? pathInput[i + 1].position : pathInput[i].position;
 						platform.Add(top + directionRotate);
@@ -215,31 +220,12 @@ public class LevelCreator : MonoBehaviour {
 					}
 				} else {
 					Vector3 flatDirectionNorm = Vector3.Normalize(flatDirection);
-					Vector3 directionRotate = new Vector3(flatDirectionNorm.z, 0, -flatDirectionNorm.x) * thickness;
-					if (flatDirection != direction) {
-						// Slope
-						platform.Add(pathInput[i + 1].position + directionRotate + flatDirectionNorm * PLATFORMHEIGHT * 2);
-						platform.Add(pathInput[i + 1].position - directionRotate + flatDirectionNorm * PLATFORMHEIGHT * 2);
-						platform.Add(pathInput[i + 1].position - directionRotate);
-						platform.Add(pathInput[i + 1].position + directionRotate);
-						List<Vector3> bottom = new List<Vector3>();
-						bottom.Add(pathInput[i].position + directionRotate + flatDirectionNorm * PLATFORMHEIGHT * 2);
-						bottom.Add(pathInput[i].position - directionRotate + flatDirectionNorm * PLATFORMHEIGHT * 2);
-						bottom.Add(pathInput[i].position - directionRotate);
-						bottom.Add(pathInput[i].position + directionRotate);
-						if (platform[0].y > bottom[0].y) {
-							CreatePlatform(new PlatformInput(platform), new PlatformInput(bottom), true);
-						} else {
-							CreatePlatform(new PlatformInput(bottom), new PlatformInput(platform), true);
-						}
-					} else {
-						// Floor
-						platform.Add(pathInput[i + 1].position + directionRotate);
-						platform.Add(pathInput[i + 1].position - directionRotate);
-						platform.Add(pathInput[i].position - directionRotate);
-						platform.Add(pathInput[i].position + directionRotate);
-						CreatePlatform(new PlatformInput(platform), PLATFORMHEIGHT, true);
-					}
+					Vector3 directionRotate = new Vector3(flatDirectionNorm.z, 0, -flatDirectionNorm.x) * platformThickness;
+					platform.Add(pathInput[i + 1].position + directionRotate);
+					platform.Add(pathInput[i + 1].position - directionRotate);
+					platform.Add(pathInput[i].position - directionRotate);
+					platform.Add(pathInput[i].position + directionRotate);
+					CreatePlatform(new PlatformInput(platform), platformHeight, true);
 				}
 			}
 		}
@@ -386,7 +372,10 @@ public class LevelCreator : MonoBehaviour {
 	/// <param name="input">The top vertices of the platform.</param>
 	/// <param name="height">The thickness of the platform.</param>
 	/// <param name="hidden">Whether to render the platform.</param>
-	private GameObject CreatePlatform(PlatformInput input, float height = PLATFORMHEIGHT, bool hidden = false) {
+	private GameObject CreatePlatform(PlatformInput input, float height = 0, bool hidden = false) {
+		if (height == 0) {
+			height = platformHeight;
+		}
 		List<Vector3> bottom = new List<Vector3>(input.vertices.Count);
 		for (int i = 0; i < input.vertices.Count; i++) {
 			bottom.Add(PathUtil.SetY(input.vertices[i], input.vertices[i].y - height));
@@ -410,7 +399,7 @@ public class LevelCreator : MonoBehaviour {
 		Mesh mesh = virtualPlatform.GetComponent<MeshFilter>().mesh;
 
 		// Create the vertices of the platform.
-		Vector3[] vertices = new Vector3[top.vertices.Count * 2];
+		Vector3[] vertices = new Vector3[top.vertices.Count * 6];
 
 		// Used to determine clockwise/counter-clockwise.
 		float edgeSum = 0;
@@ -423,11 +412,10 @@ public class LevelCreator : MonoBehaviour {
 				edgeSum += (top.vertices[0].x - top.vertices[i].x) * (top.vertices[0].z + top.vertices[i].z);
 			}
 		}
-		mesh.vertices = vertices;
 		bool clockwise = edgeSum > 0;
 
 		// Find the triangles that can make up the top and bottom faces of the platform mesh.
-		Triangulator triangulator = new Triangulator(top.vertices.ToArray ());
+		Triangulator triangulator = new Triangulator(top.vertices.ToArray());
 		int[] topTriangles = triangulator.Triangulate();
 		int[] triangles = new int[topTriangles.Length * 2 + top.vertices.Count * 6];
 		for (int i = 0; i < topTriangles.Length; i += 3) {
@@ -441,32 +429,54 @@ public class LevelCreator : MonoBehaviour {
 
 		// Find the triangles for the sides of the platform.
 		for (int i = 0; i < top.vertices.Count; i++) {
-			int offset = topTriangles.Length * 2 + i * 6;
+			int triangleOffset = topTriangles.Length * 2 + i * 6;
 			int nextIndex = i < top.vertices.Count - 1 ? i + 1 : 0;
+
+			int vertexOffset = top.vertices.Count * 2 + i * 4;
+			vertices[vertexOffset] = vertices[i];
+			vertices[vertexOffset + 1] = vertices[nextIndex];
+			vertices[vertexOffset + 2] = vertices[top.vertices.Count + i];
+			vertices[vertexOffset + 3] = vertices[top.vertices.Count + nextIndex];
+
 			if (!clockwise) {
-				triangles[offset] = i;
-				triangles[offset + 1] = nextIndex;
-				triangles[offset + 2] = top.vertices.Count + i;
-				triangles[offset + 3] = top.vertices.Count + nextIndex;
-				triangles[offset + 4] = top.vertices.Count + i;
-				triangles[offset + 5] = nextIndex;
+				triangles[triangleOffset] = vertexOffset;
+				triangles[triangleOffset + 1] = vertexOffset + 1;
+				triangles[triangleOffset + 2] = vertexOffset + 2;
+				triangles[triangleOffset + 3] = vertexOffset + 3;
+				triangles[triangleOffset + 4] = vertexOffset + 2;
+				triangles[triangleOffset + 5] = vertexOffset + 1;
 			} else {
-				triangles[offset + 5] = i;
-				triangles[offset + 4] = nextIndex;
-				triangles[offset + 3] = top.vertices.Count + i;
-				triangles[offset + 2] = top.vertices.Count + nextIndex;
-				triangles[offset + 1] = top.vertices.Count + i;
-				triangles[offset] = nextIndex;
+				triangles[triangleOffset + 5] = vertexOffset;
+				triangles[triangleOffset + 4] = vertexOffset + 1;
+				triangles[triangleOffset + 3] = vertexOffset + 2;
+				triangles[triangleOffset + 2] = vertexOffset + 3;
+				triangles[triangleOffset + 1] = vertexOffset + 2;
+				triangles[triangleOffset] = vertexOffset + 1;
 			}
 		}
 
+		mesh.vertices = vertices;
 		mesh.triangles = triangles;
+		mesh.RecalculateNormals();
 
 		virtualPlatform.AddComponent<MeshCollider>();
 		virtualPlatform.GetComponent<MeshCollider>().sharedMesh = mesh;
 		
 		virtualPlatform.transform.parent = LevelManager.Instance.transform.FindChild("Platforms").transform;
-		
+
 		return virtualPlatform;
+	}
+
+	/// <summary>
+	/// Calculates a surface normal from three points.
+	/// </summary>
+	/// <returns>A surface normal for the three points.</returns>
+	/// <param name="point1">A point on the surface.</param>
+	/// <param name="point2">A point on the surface.</param>
+	/// <param name="point3">A point on the surface.</param>
+	private Vector3 CalculateNormal(Vector3 point1, Vector3 point2, Vector3 point3) {
+		Vector3 flat1 = point2 - point1;
+		Vector3 flat2 = point3 - point2;
+		return Vector3.Cross(flat1, flat2);
 	}
 }

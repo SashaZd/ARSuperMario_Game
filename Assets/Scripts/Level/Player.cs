@@ -191,7 +191,7 @@ public class Player : MonoBehaviour {
 
 			// Terminal velocity
 			if (-body.velocity.y > jumpSpeed) {
-				body.velocity = PathUtil.SetY (body.velocity, -jumpSpeed);
+				body.velocity = PathUtil.SetY(body.velocity, -jumpSpeed);
 			}
 
 			lostPowers = 0;
