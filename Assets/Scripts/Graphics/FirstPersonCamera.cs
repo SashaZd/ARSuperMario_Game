@@ -3,7 +3,7 @@
 /// <summary>
 /// Controls the position of the first-person camera.
 /// </summary>
-public class FirstPersonCamera : MonoBehaviour {
+public class FirstPersonCamera : MonoBehaviour, CameraOption {
 
 	/// <summary> The player represented by the camera. </summary>
 	private Player player;
@@ -25,11 +25,10 @@ public class FirstPersonCamera : MonoBehaviour {
 	/// <summary> The offset of the player's head to its center. </summary>
 	private Vector3 headOffset = new Vector3(0, 0.0625f, 0);
 
-
 	/// <summary>
-	/// Sets the camera to follow a player.
+	/// Sets the player that the camera is following.
 	/// </summary>
-	/// <param name="player">The player for the camera to follow.</param>
+	/// <param name="player">The player that the camera is following.</param>
 	public void SetPlayer(Player player) {
 		this.player = player;
 		transform.position = player.transform.position + headOffset;

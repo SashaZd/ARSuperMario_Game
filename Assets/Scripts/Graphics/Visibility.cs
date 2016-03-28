@@ -24,7 +24,7 @@ public class Visibility : MonoBehaviour {
 	/// </summary>
 	private void Update() {
 		if (--keyTimer < 0 && Input.GetKey(KeyCode.Tab)) {
-			keyTimer = 8;
+			keyTimer = 2;
 			ChangeSetting();
 			meshVisible = ((int)currentSetting & 1) > 0;
 			Tracker.Instance.logAction("Visibility toggled: " + meshVisible);

@@ -237,15 +237,14 @@ public class LevelCreator : MonoBehaviour {
 
 		// Set the player on a path.
 		Player player = Instantiate(playerPrefab) as Player;
-		player.GetComponent<PathMovement>().currentPath = fullPath[0];
-		player.GetComponent<PathMovement>().startPath = fullPath[0];
+		PathMovement playerMovement = player.GetComponent<PathMovement>();
+		playerMovement.currentPath = fullPath[0];
+		playerMovement.startPath = fullPath[0];
 		foreach (PathComponent pathComponent in fullPath) {
 			pathComponent.transform.parent = player.transform;
 		}
-		FirstPersonCamera fpCamera = FindObjectOfType<FirstPersonCamera>();
-		if (fpCamera != null) {
-			fpCamera.SetPlayer(player);
-		}
+
+		levelManager.GetComponent<CameraSetting>().InitializeCameras(player);
 		levelManager.player = player;
 		
 		// Create the goal at the end of the path.
