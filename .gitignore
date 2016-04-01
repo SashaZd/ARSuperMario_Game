@@ -24,3 +24,4 @@ sysinfo.txt
 *.obj
 *.obj.meta
 Tracking/*
+.DS_Store
