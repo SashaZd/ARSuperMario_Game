@@ -47,6 +47,9 @@ public class LevelManager : MonoBehaviour {
 	[Tooltip("Whether to show an outline of the ribbon path.")]
 	public bool outlinePath;
 
+	/// <summary> The goal that the player needs to get to. </summary>
+	public Goal goal;
+
 	/// <summary>
 	/// Sets the level manager instance.
 	/// </summary>
@@ -78,6 +81,7 @@ public class LevelManager : MonoBehaviour {
 				i--;
 			}
 		}
+		goal.Reset();
 	}
 
 	/// <summary>

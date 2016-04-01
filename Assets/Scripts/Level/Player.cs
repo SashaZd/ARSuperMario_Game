@@ -159,6 +159,12 @@ public class Player : MonoBehaviour {
 				goalTick = 0;
 				SceneManager.LoadScene(SceneManager.GetActiveScene().name);
 			} else {
+				Color playerColor = new Color();
+				foreach (Renderer playerRenderer in playerRenderers) {
+					playerColor = playerRenderer.material.color;
+					playerColor.a = (MAXGOALTICKS - goalTick) / (float)MAXGOALTICKS;
+					playerRenderer.material.color = playerColor;
+				}
 				goalTick++;
 			}
 		} else if (dead) {
@@ -354,11 +360,9 @@ public class Player : MonoBehaviour {
 	/// </summary>
 	private void HitGoal() {
 		tracker.logAction("Won level.");
-		body.useGravity = false;
-		body.velocity = Vector3.up * jumpSpeed;
 		goalTick = 1;
-		physicsCollider.enabled = false;
-		ResetAnimation();
+		LevelManager.Instance.goal.Win();
+		animator.SetBool("won", true);
 	}
 
 	/// <summary>
@@ -474,6 +478,7 @@ public class Player : MonoBehaviour {
 		animator.SetBool("moving", false);
 		animator.SetBool("running", false);
 		animator.SetBool("jumping", false);
+		animator.SetBool("won", false);
 		animator.SetTrigger("reset");
 		animator.speed = 1;
 	}

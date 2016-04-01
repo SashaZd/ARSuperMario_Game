@@ -14,7 +14,7 @@ public class LevelCreator : MonoBehaviour {
 	/// <summary> Goal resource to be instantiated from. </summary>
 	[SerializeField]
 	[Tooltip("Goal resource to be instantiated from.")]
-	private GameObject goalPrefab;
+	private Goal goalPrefab;
 	/// <summary> Texture for virtual platforms. </summary>
 	[SerializeField]
 	[Tooltip("Texture for virtual platforms.")]
@@ -249,7 +249,7 @@ public class LevelCreator : MonoBehaviour {
 		levelManager.player = player;
 		
 		// Create the goal at the end of the path.
-		GameObject goal = Instantiate(goalPrefab);
+		Goal goal = Instantiate(goalPrefab);
 		goal.transform.parent = levelManager.transform.FindChild("Platforms").transform;
 		Vector3 pathEnd = PathUtil.SetY(fullPath[fullPath.Count - 1].End, PathUtil.ceilingHeight);
 		RaycastHit hit;
@@ -258,6 +258,7 @@ public class LevelCreator : MonoBehaviour {
 		} else {
 			goal.transform.position = fullPath[fullPath.Count - 1].End;
 		}
+		levelManager.goal = goal;
 
 		// Create enemies from the input.
 		List<Enemy> enemies = new List<Enemy>(enemyInput.Count);
