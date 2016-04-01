@@ -185,20 +185,6 @@ public class LevelCreator : MonoBehaviour {
 		
 		// Construct the path from the input points.
 		List<PathComponent> fullPath = new List<PathComponent>(pathInput.Count - 1);
-		for (int i = 0; i < fullPath.Capacity; i++) {
-			// Make and position the path component.
-			PathComponent pathComponent = CreatePath(pathInput[i], pathInput[i + 1]);
-			fullPath.Add(pathComponent);
-			pathComponent.lineMaterial = lineMaterial;
-
-			// Link paths together.
-			if (i > 0) {
-				pathComponent.previousPath = fullPath[i - 1];
-				fullPath[i - 1].nextPath = pathComponent;
-			}
-
-			pathComponent.Init();
-		}
 
 		// Construct virtual platforms to represent the colliders.
 		if (generatePathColliders) {
@@ -228,6 +214,21 @@ public class LevelCreator : MonoBehaviour {
 					CreatePlatform(new PlatformInput(platform), platformHeight, true);
 				}
 			}
+		}
+
+		for (int i = 0; i < fullPath.Capacity; i++) {
+			// Make and position the path component.
+			PathComponent pathComponent = CreatePath(pathInput[i], pathInput[i + 1]);
+			fullPath.Add(pathComponent);
+			pathComponent.lineMaterial = lineMaterial;
+
+			// Link paths together.
+			if (i > 0) {
+				pathComponent.previousPath = fullPath[i - 1];
+				fullPath[i - 1].nextPath = pathComponent;
+			}
+
+			pathComponent.Init();
 		}
 
 		if (fullPath.Count == 0) {
