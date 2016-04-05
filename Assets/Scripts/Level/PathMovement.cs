@@ -69,6 +69,7 @@ public class PathMovement : MonoBehaviour {
 		sideOffset = GetComponent<Collider>().bounds.extents.z;
 		transform.eulerAngles = Vector3.up * Vector3.Angle(Vector3.right, currentPath.GetDirection(true));
 		rotates = GetComponent<Rotate>() != null;
+		FacePath(true);
 	}
 
 	/// <summary>
@@ -121,7 +122,7 @@ public class PathMovement : MonoBehaviour {
 			initiated = true;
 		}
 		transform.position = startPosition;
-		transform.eulerAngles = Vector3.up * Vector3.Angle(Vector3.right, currentPath.GetDirection(true));
+		FacePath(true);
 	}
 
 	/// <summary>
@@ -200,11 +201,19 @@ public class PathMovement : MonoBehaviour {
 		}
 		// Rotate the object to face forward.
 		if (!rotates) {
-			Vector3 direction = currentPath.GetDirection(forward);
-			float angle = Mathf.Atan2 (direction.x, direction.z) * 180 / Mathf.PI;
-			Vector3 facing = Vector3.up * angle;
-			transform.eulerAngles = facing;
+			FacePath(forward);
 		}
 		return true;
+	}
+
+	/// <summary>
+	/// Rotates the entity to face the direction of the path.
+	/// </summary>
+	/// <param name="forward">Whether to face forward.</param>
+	public void FacePath(bool forward) {
+		Vector3 direction = currentPath.GetDirection(forward);
+		float angle = Mathf.Atan2 (direction.x, direction.z) * 180 / Mathf.PI;
+		Vector3 facing = Vector3.up * angle;
+		transform.eulerAngles = facing;
 	}
 }

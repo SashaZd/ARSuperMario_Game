@@ -91,6 +91,10 @@ public class Player : MonoBehaviour {
 	/// <summary> Whether the player is pressing the power-up key. </summary>
 	private bool powerKey;
 
+	/// <summary> The height threshold for stomping on enemies. </summary>
+	[Tooltip("The height threshold for stomping on enemies.")]
+	public Transform stomp;
+
 	/// <summary>
 	/// Initializes the player.
 	/// </summary>
