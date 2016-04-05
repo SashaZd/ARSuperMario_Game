@@ -3,7 +3,7 @@
 /// <summary>
 /// Attempts to float above and squash the player.
 /// </summary>
-public class Book : MonoBehaviour, Movement {
+public class Book : EnemyMovement {
 
 	/// <summary> The initial position of the book. </summary>
 	private Vector3 startPosition;
@@ -35,16 +35,14 @@ public class Book : MonoBehaviour, Movement {
 	/// <summary>
 	/// Initializes the book.
 	/// </summary>
-	private void Start() {
+	new private void Start() {
+		base.Start();
 		startPosition = transform.position;
 		body = GetComponent<Rigidbody>();
 	}
 	
 	// Update is called once per frame.
-	private void Update() {
-		if (GameMenuUI.paused) {
-			return;
-		}
+	protected override void Move() {
 		if (stage == Stage.Idle && targetingPlayer) {
 			stage = Stage.Rise;
 			groundedHeight = transform.position.y;
@@ -105,7 +103,7 @@ public class Book : MonoBehaviour, Movement {
 	/// <summary>
 	/// Resets the book.
 	/// </summary>
-	public void Reset () {
+	public override void Reset () {
 		transform.position = startPosition;
 		stage = Stage.Idle;
 		targetingPlayer = false;

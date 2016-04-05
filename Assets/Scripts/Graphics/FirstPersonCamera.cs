@@ -43,16 +43,16 @@ public class FirstPersonCamera : MonoBehaviour, CameraOption {
 			// Keyboard/mouse input to change look rotation.
 			float x = Input.GetAxis("Mouse X") * 3;
 			float y = Input.GetAxis("Mouse Y") * -3;
-			if (Input.GetKey ("l")) {
+			if (Input.GetKey("l")) {
 				x -= 1;
 			}
-			if (Input.GetKey ("j")) {
+			if (Input.GetKey("j")) {
 				x += 1;
 			}
-			if (Input.GetKey ("i")) {
+			if (Input.GetKey("i")) {
 				y -= 1;
 			}
-			if (Input.GetKey ("k")) {
+			if (Input.GetKey("k")) {
 				y += 1;
 			}
 

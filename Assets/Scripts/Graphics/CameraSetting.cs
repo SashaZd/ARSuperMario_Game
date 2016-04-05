@@ -13,9 +13,12 @@ public class CameraSetting : MonoBehaviour {
 	private Camera[] cameras;
 
 	/// <summary> The index of the currently selected camera. </summary>
-	private int cameraIndex = 0;
+	private static int cameraIndex = 0;
+
 	/// <summary> Timer to prevent input from occurring too fast. </summary>
-	private int keyTimer;
+	private float keyTimer;
+	/// <summary> The time to wait before the camera switch key can be pressed again. </summary>
+	private float KEYCOOLDOWN = 0.5f;
 
 	/// <summary>
 	/// Initializes cameras in the scene.
@@ -31,7 +34,7 @@ public class CameraSetting : MonoBehaviour {
 				option.SetPlayer(player);
 			}
 			cameras[i] = cameraObject.GetComponentInChildren<Camera>();
-			cameras[i].gameObject.SetActive(i == 0);
+			cameras[i].gameObject.SetActive(i == cameraIndex);
 		}
 	}
 
@@ -39,8 +42,9 @@ public class CameraSetting : MonoBehaviour {
 	/// Watches for camera change input.
 	/// </summary>
 	private void Update() {
-		if (cameras != null && --keyTimer < 0 && Input.GetKey(KeyCode.C)) {
-			keyTimer = 2;
+		keyTimer -= Time.deltaTime;
+		if (cameras != null && keyTimer < 0 && Input.GetKey(KeyCode.C)) {
+			keyTimer = KEYCOOLDOWN;
 			SetCameras();
 		}
 	}

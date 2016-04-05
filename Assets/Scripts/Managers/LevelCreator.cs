@@ -236,6 +236,8 @@ public class LevelCreator : MonoBehaviour {
 			return;
 		}
 
+		GetComponent<Visibility>().ApplySetting();
+
 		// Set the player on a path.
 		Player player = Instantiate(playerPrefab) as Player;
 		PathMovement playerMovement = player.GetComponent<PathMovement>();
