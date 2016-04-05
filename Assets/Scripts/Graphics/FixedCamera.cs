@@ -13,6 +13,8 @@ public class FixedCamera : MonoBehaviour, CameraOption {
 	private float playerDistanceSetting;
 	/// <summary> The maximum distance the player has been away from the camera. </summary>
 	private float maxDistance;
+	/// <summary> The speed at which the camera can be zoomed per tick. </summary>
+	private const float ZOOMSPEED = 0.02f;
 
 	/// <summary>
 	/// Initializes the maximum distance.
@@ -30,10 +32,16 @@ public class FixedCamera : MonoBehaviour, CameraOption {
 			float playerDistance = Vector3.Magnitude(player.transform.position);
 			float currentDistance = Mathf.Min(playerDistanceSetting, playerDistance);
 			transform.position = player.transform.position - (player.transform.position * currentDistance / playerDistance);
+			float distanceIncrement = Input.GetAxis("Mouse ScrollWheel") * ZOOMSPEED;
 			if (Input.GetKey(KeyCode.I)) {
-				playerDistanceSetting = Mathf.Min(currentDistance, Mathf.Max(0.05f, playerDistanceSetting - 0.02f));
+				distanceIncrement = -0.02f;
 			} else if (Input.GetKey(KeyCode.K)) {
-				playerDistanceSetting += 0.02f;
+				distanceIncrement = 0.02f;
+			}
+			if (distanceIncrement < 0) {
+				playerDistanceSetting = Mathf.Min(currentDistance, Mathf.Max(0.05f, playerDistanceSetting + distanceIncrement));
+			} else {
+				playerDistanceSetting += distanceIncrement;
 			}
 			maxDistance = Mathf.Max(maxDistance, playerDistance);
 			playerDistanceSetting = Mathf.Min(playerDistanceSetting, maxDistance);
